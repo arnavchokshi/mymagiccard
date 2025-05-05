@@ -1,0 +1,37 @@
+/* Header.css */
+
+.navbar {
+    margin-bottom: 20px;
+  }
+  
+  .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff !important;
+  }
+  
+  .nav-link {
+    color: #fff !important;
+    font-size: 1.1rem;
+    padding: 10px 15px;
+  }
+  
+  .nav-link:hover {
+    color: #B3A369 !important;
+  }
+  
+  .navbar-dark {
+    background-color: #003057 !important;
+  }
+  
+  .navbar .container {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+  
+  .navbar-nav {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+  
