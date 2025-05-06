@@ -29,12 +29,13 @@ export const Login = () => {
         },
         body: JSON.stringify(formData)
       });
-      const result = await response.json(); // Fixed the typo from "respone" to "response"
+      const result = await response.json();
+      console.log("Login result:", result);
+
 
       localStorage.setItem("token", result.token);
-
-      console.log(result);
-      navigate("/dashboard");  // Redirect to login after successful signup
+      navigate(`/user/${result.userId}/edit`);
+      
     } catch (error) {
       console.error(error.message);  // Fixed the typo from "error.essage" to "error.message"
     } finally {

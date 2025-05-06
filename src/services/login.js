@@ -19,7 +19,8 @@ async function login(email, password) {
 
     // Generate token
     const token = generateToken(existingUser);
-    return token;
+    return { token, userId: existingUser._id };
+
   } catch (error) {
     // Log the error message correctly
     console.log("Login error: ", error.message);
