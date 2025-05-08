@@ -9,8 +9,15 @@ const userSchema = new mongoose.Schema({
     type: { type: String, enum: ["text", "link", "pdf", "image", "code"], required: true },
     content: { type: String, default: "" },
     order: { type: Number, default: 0 }
-  }]
-  
+  }],
+  highlights: [{
+    category: {
+      type: String,
+      enum: ["Academic", "Professional", "Personal Development", "Extracurricular", "Technical"],
+      required: true
+    },
+    label: { type: String, required: true }
+  }]  
 });
 
 const User = mongoose.model("User", userSchema);

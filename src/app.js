@@ -1,4 +1,7 @@
 const express = require('express');
+require("dotenv").config();
+console.log("OPENAI_API_KEY loaded:", process.env.OPENAI_API_KEY ? "✅" : "❌");
+
 const signupRoute = require('./routes/signup');
 const loginRoute = require('./routes/login');
 const userRoute = require('./routes/user');
@@ -6,6 +9,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require("cors");
 const createAdminAccount = require("./scripts/admin");
+
+
 
 
 const app = express();
@@ -34,6 +39,9 @@ app.get('/', (req, res) => {
 app.use('/user', signupRoute);
 app.use('/auth', loginRoute);
 app.use('/api', userRoute);
+app.use('/uploads', express.static('uploads'));
+
+
 
 // Start the server
 app.listen(PORT, '0.0.0.0', () => {

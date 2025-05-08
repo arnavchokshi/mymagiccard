@@ -1,49 +1,162 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
+import "./UserPage.css";
 
-const PublicProfile = () => {
+// Base API URL constant to avoid hardcoding
+const API_BASE_URL = "http://192.168.86.40:2000";
+
+const UserPage = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const res = await fetch(`http://192.168.86.40:2000/api/public/${id}`);
-      const data = await res.json();
-      setUser(data);
-    };
-
-    fetchProfile();
+    setLoading(true);
+    fetch(`${API_BASE_URL}/api/public/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load profile");
+        return res.json();
+      })
+      .then((data) => {
+        console.log("HIGHLIGHTS LOADED:", data.highlights);
+        setUser({
+          ...data,
+          highlights: data.highlights || [],
+          blocks: data.blocks || [],
+        });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading profile:", err);
+        setError("Failed to load profile");
+        setLoading(false);
+      });
   }, [id]);
-
-  if (!user) return <div>Loading public profile...</div>;
+  
+  if (loading) return <div className="loading-state">Loading profile...</div>;
+  if (error) return <div className="error-state">{error}</div>;
+  if (!user) return <div className="empty-state">No user found</div>;
 
   return (
-    <div style={{ textAlign: "center", marginTop: "2rem" }}>
-      <h1>{user.name}</h1>
-      <p>Email: {user.email}</p>
+    <div className="user-page-container">
+      {/* Header */}
+      <div className="user-header">
+        
+        <div className="user-info">
+          <h1 className="user-name">{user.name}</h1>
+          <p className="user-email">{user.email}</p>
+        </div>
+      </div>
 
-      <div style={{ marginTop: "2rem", textAlign: "left", maxWidth: "600px", marginInline: "auto" }}>
-        {user.blocks && user.blocks.length > 0 ? (
-          user.blocks.map((block, i) => (
-            <div key={i} style={{ marginBottom: "1.5rem" }}>
-              <h4>{block.type.toUpperCase()}</h4>
-              {block.type === "link" ? (
-                <a href={block.content} target="_blank" rel="noopener noreferrer">{block.content}</a>
-              ) : block.type === "code" ? (
-                <pre style={{ background: "#eee", padding: "1rem" }}>
-                  <code>{block.content}</code>
-                </pre>
-              ) : (
-                <p>{block.content}</p>
-              )}
+      {/* Highlights */}
+      {user.highlights.length > 0 && (
+        <div className="highlights-container">
+          {user.highlights.map((highlight, index) => (
+            <div key={index} className="highlight-item">
+              🔥 <strong>{highlight.label}</strong> — <em>{highlight.category}</em>
             </div>
-          ))
-        ) : (
-          <p>No content yet.</p>
-        )}
+          ))}
+        </div>
+      )}
+
+      {/* Content Blocks */}
+      <div className="blocks-container">
+        <div className="blocks-scroll-area">
+          {user.blocks
+            .sort((a, b) => a.order - b.order)
+            .map((block, index) => (
+              <BlockRenderer key={index} block={block} />
+            ))}
+        </div>
       </div>
     </div>
   );
 };
 
-export default PublicProfile;
+const BlockRenderer = ({ block }) => {
+  const { type, content } = block;
+
+  switch (type) {
+    case "text":
+      return <p className="block-text">{content}</p>;
+
+    case "pdf":
+      return (
+        <div className="block-pdf">
+          <iframe
+            src={`${API_BASE_URL}${content}`}
+            title="PDF Preview"
+            className="pdf-frame"
+            frameBorder="0"
+          />
+        </div>
+      );
+
+    case "link": {
+      const [preview, setPreview] = useState(null);
+      
+      useEffect(() => {
+        fetch(`http://localhost:2000/api/link-preview?url=${encodeURIComponent(content)}`)
+          .then((res) => res.json())
+          .then(setPreview)
+          .catch(() => setPreview(null));
+      }, [content]);
+      
+      if (preview) {
+        return (
+          <a
+            href={preview.url}
+            target="_blank"
+            rel="noreferrer"
+            className="block-link"
+          >
+            {preview.image && (
+              <img
+                src={preview.image}
+                alt=""
+                className="link-image"
+              />
+            )}
+            <h3 className="link-title">{preview.title}</h3>
+            <p className="link-description">{preview.description}</p>
+            <p className="link-url">{preview.url}</p>
+          </a>
+        );
+      }
+      
+      return <div className="block-link-loading">Loading link preview...</div>;
+    }
+
+    case "code":
+      return (
+        <div className="block-code">
+          <iframe
+            srcDoc={content}
+            sandbox="allow-scripts"
+            title="Live Code Block"
+            className="code-frame"
+          />
+        </div>
+      );
+
+    case "image":
+      return (
+        <img
+          src={content}
+          alt="Uploaded content"
+          className="block-image"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/placeholder-image.png";
+          }}
+        />
+      );
+
+    default:
+      return <div className="block-unsupported">Unsupported block type: {type}</div>;
+  }
+};
+
+export default UserPage;

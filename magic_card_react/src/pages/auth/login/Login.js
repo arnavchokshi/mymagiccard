@@ -29,23 +29,31 @@ export const Login = () => {
         },
         body: JSON.stringify(formData)
       });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Login failed:", errorData.message);
+        alert("Login failed: " + errorData.message);
+        return;
+      }
+  
       const result = await response.json();
       console.log("Login result:", result);
-
-
+  
       localStorage.setItem("token", result.token);
       navigate(`/user/${result.userId}/edit`);
-      
+  
     } catch (error) {
-      console.error(error.message);  // Fixed the typo from "error.essage" to "error.message"
+      console.error("Network error:", error.message);
+      alert("Network error, please try again later.");
     } finally {
       setFormData({
         email: "",
-        name: "",
         password: ""
       });
     }
   };
+  
 
 
   return (
