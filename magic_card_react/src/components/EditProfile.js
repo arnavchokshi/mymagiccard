@@ -1,228 +1,552 @@
+// EditProfile.js
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import "./EditProfile.css";
+import CodeBlock from "./CodeBlock";
+import LinkBlock from "./LinkBlock";
+import "./HeighlightBadge.css";
+import FlipBlock from "./FlipBlock";
 
-const MAX_HIGHLIGHTS = 5;
+const blockTypes = [
+  { type: "text", label: "Text Block" },
+  { type: "link", label: "Link Block" },
+  { type: "pdf", label: "PDF Block" },
+  { type: "image", label: "Image Block" },
+  { type: "code", label: "Code Block" },
+  { type: "divider", label: "Divider Line" },
+  { type: "contactsText", label: "Contacts Block" },
+  { type: "flip", label: "Flip Block" },
+  { type: "multiBlock", label: "Multi Block" }
+
+];
 
 const EditProfile = () => {
   const { id } = useParams();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    github: "",
-    linkedin: "",
-    profilePhoto: null,
     highlights: [],
-    blocks: [],
+    profilePhoto: ""
   });
-  const [newHighlight, setNewHighlight] = useState({ category: "", label: "" });
-  const [newBlock, setNewBlock] = useState({ type: "text", content: "" });
+  
+  const [pages, setPages] = useState([
+    { id: "main", name: "Main", blocks: [] }
+  ]);
+  const [activePageId, setActivePageId] = useState("main");
+  
+  const [newHighlight, setNewHighlight] = useState({ label: "", category: "Academic" });
+  const [draggedBlockType, setDraggedBlockType] = useState(null);
+  const [showGridLines, setShowGridLines] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [useDualColumns, setUseDualColumns] = useState(false);
+
+  const activePage = pages.find((p) => p.id === activePageId);
+const blocksList = activePage ? activePage.blocks : [];
+
+const updateBlocksForActivePage = (newBlocks) => {
+    const updated = pages.map((p) =>
+      p.id === activePageId ? { ...p, blocks: newBlocks } : p
+    );
+    setPages(updated);
+  };
+  
 
   useEffect(() => {
     fetch(`http://localhost:2000/api/public/${id}`)
       .then(res => res.json())
-      .then(data => setFormData({
-        name: data.name || "",
-        email: data.email || "",
-        github: data.github || "",
-        linkedin: data.linkedin || "",
-        highlights: data.highlights || [],
-        blocks: data.blocks || []
-      }))
-      .catch(err => console.error("Failed to load profile:", err));
+      .then(data => {
+        setFormData({
+          name: data.name || "",
+          email: data.email || "",
+          highlights: data.highlights || [],
+          profilePhoto: data.profilePhoto || ""
+        });
+  
+        const loadedBlocks = data.blocksList;
+
+        if (Array.isArray(loadedBlocks)) {
+            updateBlocksForActivePage(loadedBlocks);
+        } else {
+            updateBlocksForActivePage([]);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to load profile:", err);
+        updateBlocksForActivePage([]);
+      });
   }, [id]);
-
-  const handleFieldChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const addHighlight = () => {
-    if (!newHighlight.label || !newHighlight.category) return;
-    if (formData.highlights.length >= MAX_HIGHLIGHTS) return;
-
-    setFormData(prev => ({
-      ...prev,
-      highlights: [...prev.highlights, newHighlight]
-    }));
-    setNewHighlight({ category: "", label: "" });
+  const handleAddHighlight = () => {
+    if (newHighlight.label.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        highlights: [...prev.highlights, newHighlight]
+      }));
+      setNewHighlight({ label: "", category: "Academic" });
+    }
   };
 
-  const removeHighlight = (index) => {
-    setFormData(prev => ({
+  const handleRemoveHighlight = (index) => {
+    setFormData((prev) => ({
       ...prev,
       highlights: prev.highlights.filter((_, i) => i !== index)
     }));
   };
 
-  const addBlock = async () => {
-    if (newBlock.type === "pdf" && newBlock.file) {
-      const fileData = new FormData();
-      fileData.append("pdf", newBlock.file);
+  const handleDragStart = (e, blockType) => {
+    setDraggedBlockType(blockType);
+    setIsDragging(true);
+    e.dataTransfer.setData("block-type", blockType);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDraggedBlockType(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('cell-drag-over');
+  };
+
+  const handleDragLeave = (e) => {
+    e.currentTarget.classList.remove('cell-drag-over');
+  };
+
+  const handleDrop = (e, dropIndex = blocksList.length, parentMultiBlockIndex = null) => {
+    e.preventDefault();
+    const blockType = e.dataTransfer.getData("block-type") || draggedBlockType;
+    if (!blockType) return;
   
-      try {
-        const res = await fetch("http://localhost:2000/api/upload-pdf", {
-          method: "POST",
-          body: fileData
-        });
+    const defaultContacts = [
+      { label: "LinkedIn", value: "" },
+      { label: "GitHub", value: "" },
+      { label: "Instagram", value: "" }
+    ];
   
-        const data = await res.json();
-        if (res.ok && data.url) {
-          const newOrder = formData.blocks.length;
-          setFormData(prev => ({
-            ...prev,
-            blocks: [...prev.blocks, { type: "pdf", content: data.url, order: newOrder }]
-          }));
+    let content;
+
+        if (blockType === "contactsText") {
+        content = defaultContacts;
+        } else if (blockType === "text") {
+        content = { title: "", body: "" };
+        } else if (blockType === "multiBlock") {
+        content = []; // ✅ required for multiBlock
         } else {
-          alert("PDF upload failed.");
+        content = "";
         }
-      } catch (err) {
-        console.error("Upload error:", err);
-      }
-    } else if (newBlock.content) {
-      const newOrder = formData.blocks.length;
-      setFormData(prev => ({
-        ...prev,
-        blocks: [...prev.blocks, { ...newBlock, order: newOrder }]
-      }));
+
+        const newBlock = {
+        id: `block-${Date.now()}`,
+        type: blockType,
+        content
+        };
+
+  
+    if (parentMultiBlockIndex !== null) {
+      // Dropping inside a multiBlock
+      const updated = [...blocksList];
+      const parent = updated[parentMultiBlockIndex];
+      parent.content = [...parent.content, newBlock];
+      updated[parentMultiBlockIndex] = { ...parent };
+      updateBlocksForActivePage(updated);
+    } else {
+      const updated = [...blocksList];
+      updated.splice(dropIndex, 0, newBlock);
+      updateBlocksForActivePage(updated);
     }
   
-    setNewBlock({ type: "text", content: "", file: null });
+    setDraggedBlockType(null);
+    setIsDragging(false);
   };
   
 
-  const removeBlock = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      blocks: prev.blocks.filter((_, i) => i !== index)
-    }));
+  const handleContentChange = (blockId, value) => {
+    const updatedBlocks = blocksList.map(block => 
+      block.id === blockId ? { ...block, content: value } : block
+    );
+    updateBlocksForActivePage(updatedBlocks);
   };
 
-  const saveProfile = async () => {
+  const handleContactLineChange = (blockId, lineIndex, field, newValue) => {
+    const updatedBlocks = blocksList.map(block => 
+      block.id === blockId ? {
+        ...block,
+        content: block.content.map((line, i) => 
+          i === lineIndex ? { ...line, [field]: newValue } : line
+        )
+      } : block
+    );
+    updateBlocksForActivePage(updatedBlocks);
+  };
+
+  const handleRemoveContactLine = (blockId, lineIndex) => {
+    const updatedBlocks = blocksList.map(block =>
+      block.id === blockId ? {
+        ...block,
+        content: block.content.filter((_, i) => i !== lineIndex)
+      } : block
+    );
+    updateBlocksForActivePage(updatedBlocks);
+  };
+
+  const handleAddContactLine = (blockId) => {
+    const updatedBlocks = blocksList.map(block =>
+      block.id === blockId ? {
+        ...block,
+        content: [...block.content, { label: "New", value: "" }]
+      } : block
+    );
+    updateBlocksForActivePage(updatedBlocks);
+  };
+
+  const handleRemoveBlock = (index) => {
+    const updatedBlocks = [...blocksList];
+    updatedBlocks.splice(index, 1);
+    updateBlocksForActivePage(updatedBlocks);
+  };
+
+  const handleSaveProfile = async () => {
     const token = localStorage.getItem("token");
-    const body = new FormData();
   
-    // Append all form fields
-    body.append("name", formData.name);
-    body.append("email", formData.email);
-    body.append("github", formData.github);
-    body.append("linkedin", formData.linkedin);
+    const form = new FormData();
+    form.append("name", formData.name);
+    form.append("email", formData.email);
+    form.append("highlights", JSON.stringify(formData.highlights));
+    form.append("blocksList", JSON.stringify(blocksList));
   
-    if (formData.profilePhoto) {
-      body.append("profilePhoto", formData.profilePhoto);
+    // Append profilePhoto if it's a File
+    if (formData.profilePhoto instanceof File) {
+      form.append("profilePhoto", formData.profilePhoto);
     }
-  
-    body.append("highlights", JSON.stringify(formData.highlights));
-    body.append("blocks", JSON.stringify(formData.blocks));
   
     try {
+      console.log("Submitting FormData with:");
+      for (let [key, val] of form.entries()) {
+        console.log(key, val);
+      }
+  
       const res = await fetch("http://localhost:2000/api/setup", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
         },
-        body
+        body: form
       });
   
       const result = await res.json();
   
       if (res.ok) {
         alert("Profile saved!");
-        // ✅ Redirect to public profile
-        window.location.href = `/user/${id}`;
       } else {
         alert("Save failed: " + result.message);
       }
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      alert("Something went wrong.");
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("An error occurred while saving.");
     }
   };
 
-  return (
-    <div className="max-w-3xl mx-auto space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Edit Profile</h1>
+  const updateBlock = (index, newBlock) => {
+    const updated = [...blocksList];
+    updated[index] = newBlock;
+    updateBlocksForActivePage(updated);
+  };
+  
 
-      {/* Contact Info */}
-      <div className="space-y-3">
-        <input name="name" placeholder="Name" value={formData.name} onChange={handleFieldChange} />
-        <input name="email" placeholder="Email" value={formData.email} onChange={handleFieldChange} />
-        <input name="github" placeholder="GitHub" value={formData.github} onChange={handleFieldChange} />
-        <input name="linkedin" placeholder="LinkedIn" value={formData.linkedin} onChange={handleFieldChange} />
+  const renderMultiBlock = (block, parentIndex) => {
+    const updateInner = (innerId, newContent) => {
+      const updated = block.content.map(b =>
+        b.id === innerId ? { ...b, content: newContent } : b
+      );
+      updateBlock(parentIndex, { ...block, content: updated });
+    };
+  
+    const removeInner = (innerId) => {
+      const updated = block.content.filter(b => b.id !== innerId);
+      updateBlock(parentIndex, { ...block, content: updated });
+    };
+  
+    return (
+      <div
+        className="multi-block-row"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => handleDrop(e, null, parentIndex)} // ✅ key line: drop into this block
+      >
+        {block.content.length === 0 && (
+          <div className="drop-here-placeholder">Drop blocks here</div>
+        )}
+  
+        {block.content.map((inner, i) => (
+          <div key={inner.id} className="multi-inner-cell">
+            <div className="block-header">
+              <span className="block-type-label">{inner.type}</span>
+              <button className="remove-block-btn" onClick={() => removeInner(inner.id)}>×</button>
+            </div>
+            <div className="block-content">
+              {renderBlock(inner, i, true, updateInner)}
+            </div>
+          </div>
+        ))}
       </div>
+    );
+  };
+  
+  
 
-      {/* Highlights Section */}
-      <div>
-        <h2 className="text-lg font-semibold">Highlights ({formData.highlights.length}/5)</h2>
-        <div>
-          {formData.highlights.map((h, i) => (
-            <div key={i}>
-              <span>{h.label} ({h.category})</span>
-              <button onClick={() => removeHighlight(i)}>❌</button>
+  const renderBlock = (block, index) => {
+    if (!block) return null;
+
+    const blockContent = (
+      <div className="block-content">
+        {(() => {
+          switch (block.type) {
+            case "text": {
+              const textMeta = typeof block.content === "object" ? block.content : {
+                title: "",
+                description: "",
+                body: block.content || ""
+              };
+              const updateTextMeta = (field, value) => {
+                const updated = { ...textMeta, [field]: value };
+                handleContentChange(block.id, updated);
+              };
+              return (
+                <div className="text-block-wrapper">
+                  <textarea
+                    className="block-title"
+                    placeholder="Section Title (optional)"
+                    value={textMeta.title}
+                    onChange={(e) => updateTextMeta("title", e.target.value)}
+                  />
+                  <textarea
+                    className="block-textarea"
+                    placeholder="Write your main text here..."
+                    value={textMeta.body}
+                    onChange={(e) => updateTextMeta("body", e.target.value)}
+                  />
+                </div>
+              );
+            }
+            case "link":
+              return (
+                <LinkBlock
+                  block={block}
+                  onChange={(newContent) => handleContentChange(block.id, newContent)}
+                />
+              );
+            case "flip":
+              return (
+                <FlipBlock
+                  block={block}
+                  onChange={(newContent) => handleContentChange(block.id, newContent)}
+                />
+              );
+            case "contactsText":
+              return (
+                <div className="contacts-block">
+                  {block.content.map((line, i) => (
+                    <div key={i} className="contact-line">
+                      <input
+                        type="text"
+                        value={line.label}
+                        onChange={(e) => handleContactLineChange(block.id, i, "label", e.target.value)}
+                        className="contact-label-input"
+                      />
+                      <input
+                        type="text"
+                        value={line.value}
+                        onChange={(e) => handleContactLineChange(block.id, i, "value", e.target.value)}
+                        className="contact-value-input"
+                      />
+                      <button onClick={() => handleRemoveContactLine(block.id, i)} className="remove-line">×</button>
+                    </div>
+                  ))}
+                  <button onClick={() => handleAddContactLine(block.id)} className="add-line">+ Add Line</button>
+                </div>
+              );
+            case "code":
+              return (
+                <CodeBlock
+                  content={block.content}
+                  onChange={(newContent) => handleContentChange(block.id, newContent)}
+                />
+              );
+            case "divider":
+              return <div className="divider-line-block"></div>;
+            case "multiBlock":
+                return renderMultiBlock(block, index);
+              
+            default:
+              return `${block.type.toUpperCase()} BLOCK`;
+          }
+        })()}
+      </div>
+    );
+
+    return (
+      <div className={`block-item block-${block.type}`}>
+        <div className="block-header">
+          <span className="block-type-label">{block.type}</span>
+          <button className="remove-block-btn" onClick={() => handleRemoveBlock(index)}>×</button>
+        </div>
+        {blockContent}
+      </div>
+    );
+  };
+
+  return (
+    <div className="edit-page">
+      <aside className="sidebar">
+        <div className="block-options-container">
+          <h3>Block Types</h3>
+          {blockTypes.map((b) => (
+            <div
+              key={b.type}
+              className="block-option"
+              draggable
+              onDragStart={(e) => handleDragStart(e, b.type)}
+              onDragEnd={handleDragEnd}
+            >
+              {b.label}
             </div>
           ))}
         </div>
-        <select
-          value={newHighlight.category}
-          onChange={(e) => setNewHighlight({ ...newHighlight, category: e.target.value })}
-        >
-          <option value="">Select Category</option>
-          <option value="Academic">Academic</option>
-          <option value="Professional">Professional</option>
-          <option value="Personal Development">Personal Development</option>
-          <option value="Extracurricular">Extracurricular</option>
-          <option value="Technical">Technical</option>
-        </select>
-        <input
-          placeholder="Highlight label"
-          value={newHighlight.label}
-          onChange={(e) => setNewHighlight({ ...newHighlight, label: e.target.value })}
-        />
-        <button onClick={addHighlight}>Add Highlight</button>
-      </div>
+        <div className="grid-controls">
+          <label>
+            <input
+              type="checkbox"
+              checked={showGridLines}
+              onChange={() => setShowGridLines(!showGridLines)}
+            />
+            Show Grid Lines
+          </label>
+        </div>
+      </aside>
+      
 
-      {/* Blocks Section */}
-      <div>
-        <h2 className="text-lg font-semibold">Content Blocks</h2>
-        {formData.blocks.map((b, i) => (
-          <div key={i} className="border p-2 my-2">
-            <strong>{b.type}</strong>: {b.content.slice(0, 60)}...
-            <button onClick={() => removeBlock(i)}>🗑️</button>
+      <main className="profile-editor">
+        <div className="profile-header">
+          <div className="profile-pic-wrapper">
+            <label htmlFor="profile-upload" className="profile-pic-label">
+              <img
+                src={
+                  formData.profilePhoto instanceof File
+                    ? URL.createObjectURL(formData.profilePhoto)
+                    : formData.profilePhoto || "/default-avatar.png"
+                }
+                alt="Profile"
+                className="profile-pic"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                id="profile-upload"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  console.log("File selected:", file);
+                  setFormData({ ...formData, profilePhoto: file });
+                }}
+                style={{ display: "none" }}
+              />
+            </label>
           </div>
-        ))}
-        <select value={newBlock.type} onChange={(e) => setNewBlock({ ...newBlock, type: e.target.value })}>
-          <option value="text">Text</option>
-          <option value="link">Link</option>
-          <option value="pdf">PDF</option>
-          <option value="code">Code</option>
-          <option value="image">Image</option>
-        </select>
-        {newBlock.type === "pdf" ? (
-        <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => setNewBlock({ ...newBlock, file: e.target.files[0] })}
-        />
-        ) : (
-        <input
-            placeholder="Block content"
-            value={newBlock.content}
-            onChange={(e) => setNewBlock({ ...newBlock, content: e.target.value })}
-        />
-        )}
+          <div className="profile-name">{formData.name}</div>
+          <div className="profile-email">{formData.email}</div>
+        </div>
 
-        <button onClick={addBlock}>Add Block</button>
-      </div>
+        <div className="highlights-row">
+          {formData.highlights.map((h, i) => (
+            <div key={i} className={`highlight-badge ${h.category.toLowerCase().replace(/\s+/g, '-')}`}>
+              <span>{h.label} ({h.category})</span>
+              <button
+                className="remove-btn"
+                onClick={() => handleRemoveHighlight(i)}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <input
+            type="text"
+            className="highlight-input"
+            placeholder="Highlight label..."
+            value={newHighlight.label}
+            onChange={(e) => setNewHighlight({ ...newHighlight, label: e.target.value })}
+            onKeyDown={(e) => e.key === "Enter" && handleAddHighlight()}
+          />
+          <select
+            value={newHighlight.category}
+            onChange={(e) => setNewHighlight({ ...newHighlight, category: e.target.value })}
+            className="highlight-input"
+          >
+            <option value="Academic">Academic</option>
+            <option value="Professional">Professional</option>
+            <option value="Personal Development">Personal Development</option>
+            <option value="Extracurricular">Extracurricular</option>
+            <option value="Technical">Technical</option>
+          </select>
+        </div>
 
-      {/* Save Button */}
-      <div>
-        <button onClick={saveProfile} className="bg-blue-600 text-white px-4 py-2 rounded">
+        
+
+        <div className="divider-line"></div>
+
+        <div className="page-tabs">
+  {pages.map((page) => (
+    <button
+      key={page.id}
+      className={`page-tab ${page.id === activePageId ? 'active' : ''}`}
+      onClick={() => setActivePageId(page.id)}
+    >
+      {page.name}
+    </button>
+  ))}
+  <button
+    className="add-page-btn"
+    onClick={() => {
+      const newId = `page-${Date.now()}`;
+      setPages([...pages, { id: newId, name: "New Page", blocks: [] }]);
+      setActivePageId(newId);
+    }}
+  >
+    + Add Page
+  </button>
+</div>
+
+
+        <div className={`blocks-list ${showGridLines ? 'show-grid-lines' : ''}`}>
+          {blocksList.map((block, index) => (
+            <div
+              key={block.id || index}
+              className={`grid-cell ${block ? 'has-block' : 'empty-cell'}`}
+              onDragOver={(e) => handleDragOver(e)}
+              onDragLeave={(e) => handleDragLeave(e)}
+              onDrop={(e) => handleDrop(e, index)}
+            >
+              {renderBlock(block, index)}
+            </div>
+          ))}
+          {/* final drop zone at the end */}
+          <div
+            className="grid-cell empty-cell"
+            onDragOver={(e) => handleDragOver(e)}
+            onDragLeave={(e) => handleDragLeave(e)}
+            onDrop={(e) => handleDrop(e)}
+          >
+            <div className="drop-here-placeholder">Drop Here</div>
+          </div>
+        </div>
+
+        <button className="save-profile-btn" onClick={handleSaveProfile}>
           Save Profile
         </button>
-      </div>
-
-      <a href={`/user/${id}`} className="text-blue-600 underline">
-        View Public Profile
-        </a>
-
+      </main>
     </div>
   );
 };

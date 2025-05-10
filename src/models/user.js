@@ -3,13 +3,13 @@ const mongoose = require("mongoose");  // Ensure mongoose is required correctly
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  profilePhoto: { type: String },
   password: { type: String, required: true },
   role: { type: String, default: "customer" },
-  blocks: [{
-    type: { type: String, enum: ["text", "link", "pdf", "image", "code"], required: true },
-    content: { type: String, default: "" },
-    order: { type: Number, default: 0 }
-  }],
+  blocksGrid: [[{
+    type: { type: String, enum: ["text", "link", "image", "code", "pdf", "contactsText", "divider"], required: true },
+    content: mongoose.Schema.Types.Mixed
+  }]],
   highlights: [{
     category: {
       type: String,

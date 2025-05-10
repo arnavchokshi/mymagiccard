@@ -27,6 +27,7 @@ mongoose.connect('mongodb+srv://chokshiarnav:CnR7UHD6hGFxlSw9@majiccluster.edhrv
 // Middleware to parse JSON data
 app.use(bodyParser.json());
 app.use(cors());
+app.use("/uploads", express.static("uploads"));
 
 createAdminAccount();
 
@@ -40,6 +41,7 @@ app.use('/user', signupRoute);
 app.use('/auth', loginRoute);
 app.use('/api', userRoute);
 app.use('/uploads', express.static('uploads'));
+
 
 
 

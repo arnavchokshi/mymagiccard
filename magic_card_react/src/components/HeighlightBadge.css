@@ -1,0 +1,249 @@
+/* HighlightBadge.css */
+
+/* Base variables for customization */
+:root {
+    --badge-blur: 10px;
+    --badge-bg-opacity: 0.25;
+    --badge-glow-intensity: 0.4;
+    --badge-hover-scale: 1.05;
+    --badge-transition: all 0.3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  }
+  
+  /* Base highlight badge styles */
+  .highlight-badge {
+    padding: 7px 20px;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 14px;
+    position: relative;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(20, 20, 20, var(--badge-bg-opacity));
+    backdrop-filter: blur(var(--badge-blur));
+    -webkit-backdrop-filter: blur(var(--badge-blur));
+    color: white;
+    transition: var(--badge-transition);
+    border: none;
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.3),
+      0 0 1px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+  }
+  
+  /* Gradient text effect */
+  .highlight-badge span {
+    background: linear-gradient(45deg, #8000ff, #ff00cc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+    position: relative;
+    z-index: 2;
+  }
+  
+  /* Glowing border effect using pseudo-element */
+  .highlight-badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: 9999px;
+    background: linear-gradient(45deg, #8000ff, #ff00cc);
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.85;
+    transition: var(--badge-transition);
+  }
+  
+  /* Subtle shine effect */
+  .highlight-badge::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 120%;
+    height: 120%;
+    background: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.03) 75%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(25deg) translateY(0);
+    transition: transform 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Hover effects */
+  .highlight-badge:hover {
+    transform: translateY(-2px) scale(var(--badge-hover-scale));
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(128, 0, 255, var(--badge-glow-intensity));
+  }
+  
+  .highlight-badge:hover::before {
+    opacity: 1;
+    padding: 1.5px; /* Slightly thicker border on hover */
+  }
+  
+  .highlight-badge:hover::after {
+    transform: rotate(25deg) translateY(150%);
+  }
+  
+  /* Academic = pink → purple */
+  .highlight-badge.academic::before {
+    background: linear-gradient(45deg, #340168, #ff00cc);
+  }
+  
+  .highlight-badge.academic span {
+    background: linear-gradient(45deg, #9950e1, #ff73e3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .highlight-badge.academic:hover {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(255, 0, 204, var(--badge-glow-intensity));
+  }
+  
+  /* Professional = blue → cyan */
+  .highlight-badge.professional::before {
+    background: linear-gradient(45deg, #01416c, #00ffee);
+  }
+  
+  .highlight-badge.professional span {
+    background: linear-gradient(45deg, #166193, #74f1e8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .highlight-badge.professional:hover {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(0, 255, 238, var(--badge-glow-intensity));
+  }
+  
+  /* Personal Development = orange → yellow */
+  .highlight-badge.personal-development::before {
+    background: linear-gradient(45deg, #a66400, #ffee00);
+  }
+  
+  .highlight-badge.personal-development span {
+    background: linear-gradient(45deg, #f6a62e, #cab472);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .highlight-badge.personal-development:hover {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(255, 238, 0, var(--badge-glow-intensity));
+  }
+  
+  /* Extracurricular = green → lime */
+  .highlight-badge.extracurricular::before {
+    background: linear-gradient(45deg, #125812, #ccff33);
+  }
+  
+  .highlight-badge.extracurricular span {
+    background: linear-gradient(45deg, #41a041, #e0ff85);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .highlight-badge.extracurricular:hover {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(204, 255, 51, var(--badge-glow-intensity));
+  }
+  
+  /* Technical = red → deep pink */
+  .highlight-badge.technical::before {
+    background: linear-gradient(45deg, #600303, #fa34b8);
+  }
+  
+  .highlight-badge.technical span {
+    background: linear-gradient(45deg, #993a3a, #f97ccf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .highlight-badge.technical:hover {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.4),
+      0 0 15px rgba(250, 52, 184, var(--badge-glow-intensity));
+  }
+  
+  /* Enhanced remove button */
+  .remove-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .remove-btn:hover {
+    transform: scale(1.2) rotate(90deg);
+    color: #ff66ff;
+    text-shadow: 0 0 8px rgba(255, 102, 255, 0.7);
+  }
+  
+  /* Animation for newly added badges */
+  @keyframes badgeAppear {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  .highlight-badge.new-badge {
+    animation: badgeAppear 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  }
+  
+  /* Pulse animation for badge feedback */
+  @keyframes badgePulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(128, 0, 255, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(128, 0, 255, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(128, 0, 255, 0);
+    }
+  }
+  
+  .highlight-badge.pulse {
+    animation: badgePulse 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  }

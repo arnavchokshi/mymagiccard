@@ -1,0 +1,60 @@
+.code-block-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px dashed #555;
+    transition: all 0.3s ease;
+  }
+  
+  .code-block-container.highlight-drop {
+    border-color: #4a90e2;
+    background-color: rgba(74, 144, 226, 0.1);
+  }
+  
+  .drop-instructions {
+    text-align: center;
+    padding: 8px;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  
+  .code-block-editor {
+    width: 100%;
+    height: 200px;
+    font-family: monospace;
+    background-color: #1e1e1e;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 10px;
+    border-radius: 6px;
+    resize: vertical;
+  }
+  
+  .code-block-preview {
+    width: 100%;
+    height: 300px;
+    border: 1px solid #444;
+    background-color: white;
+    border-radius: 6px;
+  }
+  
+  /* Add animation for when items are dragged over */
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(74, 144, 226, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
+    }
+  }
+  
+  .code-block-container.highlight-drop {
+    animation: pulse 1.5s infinite;
+  }
