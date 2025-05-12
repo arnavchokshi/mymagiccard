@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./EditProfile.css";
+import "../EditProfile/EditProfile.css";
 
 const LinkBlock = ({ block, onChange }) => {
   const [preview, setPreview] = useState(null);

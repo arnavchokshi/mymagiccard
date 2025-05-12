@@ -4,7 +4,7 @@ import Login from "./pages/auth/login/Login";
 import Signup from "./pages/auth/signup/Signup";
 import Dashboard from "./pages/dashboard/Dashboard";
 import UserPage from './pages/user/UserPage';
-import EditProfile from "./components/EditProfile";
+import EditProfile from "./components/EditProfile/EditProfile";
 
 
 

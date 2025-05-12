@@ -1,25 +1,34 @@
-const mongoose = require("mongoose");  // Ensure mongoose is required correctly
+const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  profilePhoto: { type: String },
-  password: { type: String, required: true },
-  role: { type: String, default: "customer" },
-  blocksGrid: [[{
-    type: { type: String, enum: ["text", "link", "image", "code", "pdf", "contactsText", "divider"], required: true },
-    content: mongoose.Schema.Types.Mixed
-  }]],
-  highlights: [{
-    category: {
-      type: String,
-      enum: ["Academic", "Professional", "Personal Development", "Extracurricular", "Technical"],
-      required: true
-    },
-    label: { type: String, required: true }
-  }]  
+const BlockSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  type: { type: String, required: true },
+  content: mongoose.Schema.Types.Mixed
 });
 
-const User = mongoose.model("User", userSchema);
+const PageSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  name: { type: String, default: "New Page" },
+  blocks: [BlockSchema]
+});
 
-module.exports = User;
+const HighlightSchema = new mongoose.Schema({
+  label: { type: String, required: true },
+  category: {
+    type: String,
+    enum: ["Academic", "Professional", "Personal Development", "Extracurricular", "Technical"],
+    default: "Academic"
+  }
+});
+
+const UserSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String },
+  name: { type: String, required: true },
+  profilePhoto: { type: String },
+  highlights: [HighlightSchema],
+  pages: [PageSchema],
+  activePageId: { type: String }
+}, { timestamps: true });
+
+module.exports = mongoose.model("User", UserSchema);

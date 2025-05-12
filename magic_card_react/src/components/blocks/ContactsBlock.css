@@ -1,0 +1,68 @@
+.contacts-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
+  }
+  
+  .contact-line {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .contact-label-input,
+  .contact-value-input {
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(179, 163, 105, 0.2);
+    color: #fff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+  
+  .contact-label-input {
+    flex: 0.3;
+  }
+  
+  .contact-value-input {
+    flex: 0.7;
+  }
+  
+  .contact-label-input:focus,
+  .contact-value-input:focus {
+    outline: none;
+    border-color: var(--primary-neon);
+    box-shadow: 0 0 0 1px rgba(179, 163, 105, 0.4);
+  }
+  
+  .add-line,
+  .remove-line {
+    background-color: rgba(179, 163, 105, 0.2);
+    border: 1px solid rgba(179, 163, 105, 0.4);
+    color: var(--primary-neon);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .add-line:hover,
+  .remove-line:hover {
+    background-color: rgba(179, 163, 105, 0.4);
+    transform: translateY(-2px);
+  }
+  
+  .remove-line {
+    padding: 2px 8px;
+    background-color: rgba(255, 77, 77, 0.2);
+    border-color: rgba(255, 77, 77, 0.4);
+    color: #ff4d4d;
+  }
+  
+  .remove-line:hover {
+    background-color: rgba(255, 77, 77, 0.4);
+  }
+  

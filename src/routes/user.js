@@ -1,200 +1,156 @@
 const express = require("express");
-const cors = require("cors");
-const multer = require("multer");
-const path = require("path");
-const userController = require("../controllers/user");
-const authMiddleware = require("../utils/authMiddleware");
-const User = require("../models/user");
-const { getLinkPreview } = require("link-preview-js");
-
 const router = express.Router();
-router.use(cors());
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const { authenticateToken } = require("../utils/authMiddleware");
+const multer = require("multer");
+const upload = multer(); // memory storage
 
-const ogs = require("open-graph-scraper");
 
-// Link preview route
-router.get("/link-preview", async (req, res) => {
-  const { url } = req.query;
-  if (!url) return res.status(400).json({ message: "Missing URL" });
 
+// Secret key (ideally store in .env)
+const { secretkey } = require("../configuration/jwtConfig");
+
+
+// ✅ REGISTER a new user
+router.post("/user/register", async (req, res) => {
   try {
-    const data = await getLinkPreview(url);
+    const { email, name, password } = req.body;
 
-    res.json({
-      title: data.title || "",
-      description: data.description || "",
-      image: data.images?.[0] || "",
-      url: data.url || url
+    if (!email || !name || !password) {
+      return res.status(400).json({ message: "All fields required." });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: "User already exists." });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      email,
+      name,
+      password: hashedPassword,
+      highlights: [],
+      pages: [],
+      activePageId: "main"
     });
+
+    await newUser.save();
+
+    const token = jwt.sign({ id: newUser._id, email: newUser.email }, secretkey, { expiresIn: "2h" });
+    res.status(201).json({ message: "User registered successfully.", token });
+
   } catch (err) {
-    console.error("Link preview error:", err.message);
-    res.status(500).json({ message: "Failed to generate preview" });
+    console.error("Registration error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// File upload configuration
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) =>
-    cb(null, Date.now() + path.extname(file.originalname))
-});
-const upload = multer({ storage });
 
-// ✅ PUBLIC profile route
-router.get("/public/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("name email blocksGrid highlights profilePhoto");
-
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.json({
-      name: user.name,
-      email: user.email,
-      highlights: user.highlights,
-      blocksGrid: user.blocksGrid || [],
-      profilePhoto: user.profilePhoto || ""
-    });
-  } catch (error) {
-    console.error("Public profile error:", error.message);
-    res.status(500).json({ message: "Error retrieving public profile" });
-  }
-});
-
-// Private route - Get all users
-router.get("/users", authMiddleware.authenticateToken, userController.getUsers);
-
-// POST /api/setup — Save full profile
-router.post("/setup", authMiddleware.authenticateToken, upload.single("profilePhoto"), async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const { name, email } = req.body;
-    const highlights = JSON.parse(req.body.highlights || "[]");
-    const blocksGrid = JSON.parse(req.body.blocks || "[]");
-
-    user.name = name;
-    user.email = email;
-    user.highlights = highlights;
-    user.blocksGrid = blocksGrid;
-
-    if (req.file) {
-      user.profilePhoto = `/uploads/${req.file.filename}`;
+// ✅ PUBLIC PROFILE ROUTE
+router.get("/api/public/:id", async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.json({
+        name: user.name,
+        email: user.email,
+        highlights: user.highlights,
+        profilePhoto: user.profilePhoto,
+        pages: user.pages,
+        activePageId: user.activePageId
+      });
+      
+    } catch (err) {
+      console.error("Error fetching public profile:", err);
+      res.status(500).json({ message: "Server error fetching profile" });
     }
+  });
 
-    await user.save();
+  
+  // 👇 THIS is the public profile route
+  router.get("/public/:id", async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.json({
+        name: user.name,
+        email: user.email,
+        highlights: user.highlights,
+        profilePhoto: user.profilePhoto,
+        pages: user.pages,
+        activePageId: user.activePageId
+      });
+    } catch (err) {
+      console.error("Error in GET /public/:id:", err);
+      res.status(500).json({ message: "Server error fetching profile" });
+    }
+  });
 
-    res.status(200).json({ message: "Profile saved", id: user._id });
-  } catch (err) {
-    console.error("Setup error:", err.message);
-    res.status(500).json({ message: "Failed to save profile", error: err.message });
-  }
-});
 
-// Block management routes
-// Add a new block
-router.post("/:id/blocks", async (req, res) => {
-  try {
-    const { type, content } = req.body;
-    const user = await User.findById(req.params.id);
+
+  router.post("/setup", authenticateToken, upload.none(), async (req, res) => {
+    try {
+      console.log("🔥 req.body:", req.body);
+  
+      const {
+        name,
+        email,
+        highlights,
+        pages,
+        blocksList,
+        activePageId,
+        profilePhotoUrl
+      } = req.body;
+  
+      console.log("🔍 name:", name);
+      console.log("🔍 highlights (raw):", highlights);
+      console.log("🔍 pages (raw):", pages);
+  
+      const parsedPages = JSON.parse(pages); // likely crash here
+  
+      const update = {
+        name,
+        email,
+        highlights: JSON.parse(highlights),
+        pages: parsedPages.pages,
+        activePageId: parsedPages.activePageId
+      };
+  
+      if (profilePhotoUrl) update.profilePhoto = profilePhotoUrl;
+  
+      const user = await User.findById(req.user.id || req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const newBlock = { type, content };
-    user.blocksGrid.push(newBlock);
-    await user.save();
+    user.name = update.name;
+    user.email = update.email;
+    user.highlights = update.highlights;
+    user.pages = update.pages;
+    user.activePageId = update.activePageId;
+    if (update.profilePhoto) user.profilePhoto = update.profilePhoto;
 
-    res.status(201).json(user.blocksGrid);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+    await user.save();  // ✅ ensures Mongoose uses schema correctly
 
-// Update a block by index
-router.put("/:id/blocks/:index", async (req, res) => {
-  try {
-    const { type, content } = req.body;
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const index = parseInt(req.params.index);
-    if (index < 0 || index >= user.blocksGrid.length) {
-      return res.status(400).json({ message: "Invalid block index" });
+  
+      res.status(200).json({ message: "Profile updated successfully." });
+    } catch (err) {
+      console.error("❌ Profile update error:", err);
+      res.status(500).json({ message: "Server error during profile update" });
     }
+  });
+  
+  
+  
+  
 
-    user.blocksGrid[index] = { ...user.blocksGrid[index], type, content };
-    await user.save();
-
-    res.json(user.blocksGrid);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Delete a block by index
-router.delete("/:id/blocks/:index", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const index = parseInt(req.params.index);
-    if (index < 0 || index >= user.blocksGrid.length) {
-      return res.status(400).json({ message: "Invalid block index" });
-    }
-
-    user.blocksGrid.splice(index, 1);
-    await user.save();
-
-    res.json(user.blocksGrid);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// PDF Upload
-const uploadPDF = multer({
-  storage: multer.diskStorage({
-    destination: "uploads/",
-    filename: (req, file, cb) =>
-      cb(null, Date.now() + "-" + file.originalname)
-  })
-});
-
-router.post("/upload-pdf", uploadPDF.single("pdf"), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: "No PDF uploaded" });
-
-  const url = `/uploads/${req.file.filename}`;
-  res.status(200).json({ url });
-});
-
-// Save profile (alternative route)
-router.post("/save-profile", authMiddleware.authenticateToken, async (req, res) => {
-  try {
-    console.log("🔧 Save-profile route hit");
-    console.log("Request body:", req.body);
-
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      console.log("❌ User not found:", req.user._id);
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const { name, email, highlights, blocksGrid } = req.body;
-
-    console.log("Parsed values:", { name, email, highlights, blocksGrid });
-
-    user.name = name;
-    user.email = email;
-    user.highlights = highlights;
-    user.blocksGrid = blocksGrid;
-
-    await user.save();
-    console.log("✅ User profile saved");
-
-    res.status(200).json({ message: "Profile updated" });
-  } catch (err) {
-    console.error("❌ Save profile error:", err.message);
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-});
-
+  
 module.exports = router;

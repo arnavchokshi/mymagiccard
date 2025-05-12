@@ -1,0 +1,59 @@
+.page-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .page-tab {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background-color: rgba(179, 163, 105, 0.1);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+  
+  .page-tab.active {
+    background-color: rgba(179, 163, 105, 0.4);
+    border-color: var(--primary-neon);
+  }
+  
+  .page-tab:hover {
+    background-color: rgba(179, 163, 105, 0.2);
+  }
+  
+  .add-page-btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--primary-neon);
+    cursor: pointer;
+    font-weight: 600;
+    border: 1px dashed var(--primary-neon);
+  }
+  
+  .add-page-btn:hover {
+    background-color: rgba(179, 163, 105, 0.15);
+  }
+
+  .page-tab-input {
+    background-color: rgba(30, 30, 30, 0.7);
+    border: 1px solid var(--primary-neon);
+    border-radius: 8px;
+    color: var(--primary-neon);
+    padding: 4px 10px;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .page-tab-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  
