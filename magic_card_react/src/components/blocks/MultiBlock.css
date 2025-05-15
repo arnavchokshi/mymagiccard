@@ -1,20 +1,43 @@
 .multi-block-column {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    min-height: 100px;
-    border: 1px dashed rgba(179, 163, 105, 0.3);
-    background-color: rgba(30, 30, 30, 0.4);
-    border-radius: 10px;
-  }
+  display: flex;
+  flex-direction: row; /* Changed from column to row */
+  gap: 10px;
+  padding: 10px;
+  min-height: 100px;
+  border: 1px dashed rgba(179, 163, 105, 0.3);
+  background-color: rgba(30, 30, 30, 0.4);
+  border-radius: 10px;
+  flex-wrap: wrap; /* Optional: allow wrapping on small screens */
+}
+
   
-  .multi-inner-block {
-    width: 100%;
-    padding: 10px;
-    background-color: rgba(20, 20, 20, 0.3);
-    border: 1px solid rgba(179, 163, 105, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  }
+.multi-inner-block {
+  flex: 1 1 100%;
+  max-width: 100%;
+  transition: all 0.3s ease;
+}
+
+.multi-block-column {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  min-height: 120px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  background-color: rgba(30, 30, 30, 0.4);
+  border-radius: 10px;
+  transition: background-color 0.2s;
+}
+
+.multi-block-column:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Dynamically assign columns based on number of blocks */
+.multi-block-column > .multi-inner-block {
+  width: 100%;
+}
+
+/* Let JS assign grid-template-columns based on block count */
+
+
   

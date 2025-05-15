@@ -13,7 +13,7 @@ const Header = () => {
   };
 
   return (
-    <Navbar bg={token ? "primary" : "dark"} variant="dark">
+    <Navbar bg={token ? "dark" : "dark"} variant="dark">
       <Container>
         <Navbar.Brand as={Link} to="">
           {token ? "Logged-In" : "Not-LoggedIn"}

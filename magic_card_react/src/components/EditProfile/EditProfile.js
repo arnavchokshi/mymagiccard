@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import "./EditProfile.css";
+import { useParams, Link } from "react-router-dom";
+
 
 // Blocks
 import TextBlock from "../blocks/TextBlock";
@@ -19,16 +19,23 @@ import BlockDropZone from "./BlockDropZone";
 import { generateUniqueBlockId, getDefaultBlockContent } from "./utils";
 
 const blockTypes = [
-  { type: "text", label: "Text Block" },
-  { type: "link", label: "Link Block" },
-  { type: "pdf", label: "PDF Block" },
-  { type: "image", label: "Image Block" },
-  { type: "code", label: "Code Block" },
-  { type: "divider", label: "Divider Line" },
-  { type: "contactsText", label: "Contacts Block" },
-  { type: "flip", label: "Flip Block" },
-  { type: "multiBlock", label: "Multi Block" }
+  { type: "text", label: "Text Block", tooltip: "Add simple text content" },
+  { type: "link", label: "Link Block", tooltip: "Add a clickable link" },
+  { type: "pdf", label: "PDF Block", tooltip: "Add PDF content" },
+  { type: "image", label: "Image Block", tooltip: "Add an image" },
+  { type: "code", label: "Code Block", tooltip: "Add code with syntax highlighting" },
+  { type: "divider", label: "Divider Line", tooltip: "Add a visual separator" },
+  { type: "contactsText", label: "Contacts Block", tooltip: "Add contact information" },
+  { type: "flip", label: "Flip Block", tooltip: "Add flippable content" },
+  { type: "multiBlock", label: "Multi Block", tooltip: "Combine multiple blocks" }
 ];
+
+const blockCategories = {
+  Content: ["text", "link", "pdf"],
+  Media: ["image", "code"],
+  Layout: ["divider", "flip", "multiBlock"],
+  Info: ["contactsText"]
+};
 
 const EditProfile = () => {
   const { id } = useParams();
@@ -45,9 +52,10 @@ const EditProfile = () => {
 
   const [newHighlight, setNewHighlight] = useState({ label: "", category: "Academic" });
   const [draggedBlockType, setDraggedBlockType] = useState(null);
-  const [showGridLines, setShowGridLines] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [blockToDelete, setBlockToDelete] = useState(null);
+  const [sidebarActive, setSidebarActive] = useState(true);
+  const [selectedBlock, setSelectedBlock] = useState(null);
 
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
@@ -64,14 +72,14 @@ const EditProfile = () => {
       try {
         const res = await fetch(`http://localhost:2000/api/public/${id}`);
         const data = await res.json();
-  
+
         setFormData({
           name: data.name || "",
           email: data.email || "",
           highlights: Array.isArray(data.highlights) ? data.highlights : [],
           profilePhoto: data.profilePhoto || ""
         });
-  
+
         if (Array.isArray(data.pages)) {
           setPages(data.pages);
           setActivePageId(data.activePageId || "main");
@@ -82,10 +90,13 @@ const EditProfile = () => {
         setActivePageId("main");
       }
     };
-  
+
     if (id) fetchProfile();
+
+    setTimeout(() => {
+      setSidebarActive(true);
+    }, 100);
   }, [id]);
-  
 
   const handleDrop = (e, dropIndex = blocksList.length, parentMultiBlockIndex = null) => {
     e.preventDefault();
@@ -102,13 +113,15 @@ const EditProfile = () => {
     if (parentMultiBlockIndex !== null) {
       const parent = updated[parentMultiBlockIndex];
       parent.content.push(newBlock);
-    } else {
+    } else if (!blocksList[dropIndex]) {
       updated.splice(dropIndex, 0, newBlock);
     }
 
     updateBlocksForActivePage(updated);
     setDraggedBlockType(null);
     setIsDragging(false);
+    setSelectedBlock(newBlock.id);
+    setTimeout(() => setSelectedBlock(null), 2000);
   };
 
   const handleContentChange = (blockId, value) => {
@@ -153,10 +166,8 @@ const EditProfile = () => {
             onRemoveLine={handleRemoveContactLine}
           />
         );
-        case "divider":
-          return (
-            <div className="divider-line-only" />
-          );
+      case "divider":
+        return <div className="divider-line-only" />;
       case "multiBlock":
         const updateInner = (innerId, newContent) => {
           const updated = block.content.map((b) =>
@@ -223,14 +234,12 @@ const EditProfile = () => {
 
   const handleRemoveBlock = (index) => {
     setBlockToDelete(index);
-    
-    // After animation completes, actually remove the block
     setTimeout(() => {
       const updated = [...blocksList];
       updated.splice(index, 1);
       updateBlocksForActivePage(updated);
       setBlockToDelete(null);
-    }, 500); // Match this with CSS animation duration
+    }, 500);
   };
 
   const handleRenamePage = (id, newName) => {
@@ -239,7 +248,6 @@ const EditProfile = () => {
     );
     setPages(updatedPages);
   };
-  
 
   const handleAddHighlight = () => {
     if (newHighlight.label.trim()) {
@@ -268,7 +276,7 @@ const EditProfile = () => {
       form.append("email", formData.email);
       form.append("highlights", JSON.stringify(formData.highlights));
       form.append("pages", JSON.stringify({ pages, activePageId }));
-      form.append("blocksList", JSON.stringify(blocksList)); // backward compatibility
+      form.append("blocksList", JSON.stringify(blocksList));
 
       if (formData.profilePhoto instanceof File) {
         form.append("profilePhoto", formData.profilePhoto);
@@ -290,63 +298,76 @@ const EditProfile = () => {
     }
   };
 
+  const getBlocksByCategory = (categoryName) => {
+    const categoryTypes = blockCategories[categoryName] || [];
+    return blockTypes.filter((block) => categoryTypes.includes(block.type));
+  };
+
   return (
     <div className="edit-page">
-      <aside className="sidebar">
-        <div className="block-options-container">
-          <h3>Block Types</h3>
-          {blockTypes.map((b) => (
-            <div
-              key={b.type}
-              className="block-option"
-              draggable
-              onDragStart={(e) => {
-                setDraggedBlockType(b.type);
-                setIsDragging(true);
-                e.dataTransfer.setData("block-type", b.type);
-              }}
-              onDragEnd={() => {
-                setIsDragging(false);
-                setDraggedBlockType(null);
-              }}
-            >
-              {b.label}
-            </div>
-          ))}
-        </div>
-        <div className="grid-controls">
-          <label>
-            <input
-              type="checkbox"
-              checked={showGridLines}
-              onChange={() => setShowGridLines(!showGridLines)}
-            />
-            Show Grid Lines
-          </label>
+      <aside className={`sidebar ${sidebarActive ? "active" : ""}`}>
+        <div className="sidebar-header">
+          <h2>Editor Tools</h2>
         </div>
 
-        <button 
-          className="save-profile-btn" 
-          onClick={handleSaveProfile}
-          type="button"
-        >
-          Save Profile
-        </button>
+        {Object.keys(blockCategories).map((category) => (
+          <div key={category} className="sidebar-category">
+            <div className="sidebar-category-title">{category}</div>
+            <div className="block-options-container">
+              {getBlocksByCategory(category).map((block) => (
+                <div
+                  key={block.type}
+                  className={`block-option ${selectedBlock === block.type ? "selected" : ""}`}
+                  draggable
+                  data-tooltip={block.tooltip}
+                  onDragStart={(e) => {
+                    setDraggedBlockType(block.type);
+                    setIsDragging(true);
+                    e.dataTransfer.setData("block-type", block.type);
+                  }}
+                  onDragEnd={() => {
+                    setIsDragging(false);
+                    setDraggedBlockType(null);
+                  }}
+                  onClick={() => {
+                    const newBlock = {
+                      id: generateUniqueBlockId(),
+                      type: block.type,
+                      content: getDefaultBlockContent(block.type)
+                    };
+                    updateBlocksForActivePage([...blocksList, newBlock]);
+                    setSelectedBlock(block.type);
+                    setTimeout(() => setSelectedBlock(null), 1000);
+                  }}
+                >
+                  {block.label}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="sidebar-category">
+          <div className="sidebar-category-title">Settings</div>
+          <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
+            Save Profile
+          </button>
+          <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
+            View Public Profile
+          </Link>
+        </div>
       </aside>
 
       <main className="profile-editor">
-        {/* Profile Header */}
-        <div className="profile-header">
-          <label htmlFor="profile-upload" className="profile-pic-label">
-            <img
-              src={
-                formData.profilePhoto instanceof File
-                  ? URL.createObjectURL(formData.profilePhoto)
-                  : formData.profilePhoto || "/default-avatar.png"
-              }
-              alt="Profile"
-              className="profile-pic"
-            />
+        <div
+          className="profile-header-background"
+          style={{
+            backgroundImage: formData.profilePhoto
+              ? `url(${formData.profilePhoto instanceof File ? URL.createObjectURL(formData.profilePhoto) : formData.profilePhoto})`
+              : `url('/defaultBackground.jpg')`,
+          }}
+        >
+          <div className="profile-header-overlay">
             <input
               type="file"
               accept="image/*"
@@ -357,21 +378,32 @@ const EditProfile = () => {
               }}
               style={{ display: "none" }}
             />
-          </label>
-          <div className="profile-info">
-            <div className="profile-name">{formData.name}</div>
-            <div className="profile-email">{formData.email}</div>
+            <div className="profile-text">
+              <textarea
+                className="code-input profile-name-input"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Your Name"
+              />
+              <textarea
+                className="code-input profile-email-input"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="your.email@example.com"
+              />
+            </div>
+
           </div>
         </div>
-
-        {/* Highlights + Pages */}
-        <HighlightsBar
-          highlights={formData.highlights}
-          newHighlight={newHighlight}
-          setNewHighlight={setNewHighlight}
-          onAdd={handleAddHighlight}
-          onRemove={handleRemoveHighlight}
-        />
+        
+        <div className="main-content">
+          <HighlightsBar
+            highlights={formData.highlights}
+            newHighlight={newHighlight}
+            setNewHighlight={setNewHighlight}
+            onAdd={handleAddHighlight}
+            onRemove={handleRemoveHighlight}
+          />
 
         <div className="divider-line" />
 
@@ -387,30 +419,29 @@ const EditProfile = () => {
           onRenamePage={handleRenamePage}
         />
 
-<div className={`blocks-list ${showGridLines ? "show-grid-lines" : ""}`}>
-  <BlockDropZone
-    blocks={blocksList}
-    draggedBlockType={draggedBlockType}
-    renderBlock={renderBlock}
-    onInsertBlock={(type, index) => {
-      const updated = [...blocksList];
-      if (!type) {
-        updated.splice(index, 1);
-      } else {
-        const newBlock = {
-          id: generateUniqueBlockId(),
-          type,
-          content: getDefaultBlockContent(type)
-        };
-        while (updated.length < index) updated.push(null);
-        updated.splice(index, 0, newBlock);
-      }
-      updateBlocksForActivePage(updated);
-    }}
-  />
-</div>
-
-
+        <div className="blocks-list">
+          <BlockDropZone
+            blocks={blocksList}
+            draggedBlockType={draggedBlockType}
+            renderBlock={renderBlock}
+            onInsertBlock={(type, index) => {
+              const updated = [...blocksList];
+              if (!type) {
+                updated.splice(index, 1);
+              } else {
+                const newBlock = {
+                  id: generateUniqueBlockId(),
+                  type,
+                  content: getDefaultBlockContent(type),
+                };
+                while (updated.length < index) updated.push(null);
+                updated.splice(index, 0, newBlock);
+              }
+              updateBlocksForActivePage(updated);
+            }}
+          />
+        </div>
+        </div>
       </main>
     </div>
   );

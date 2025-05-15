@@ -1,3 +1,4 @@
+// BlockDropZone.js
 import React from "react";
 import "./BlockDropZone.css";
 
@@ -14,53 +15,61 @@ const BlockDropZone = ({
     onInsertBlock(blockType, dropIndex);
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.add("cell-drag-over");
+  };
+
+  const handleDragLeave = (e) => {
+    e.currentTarget.classList.remove("cell-drag-over");
+  };
+
+  const handleDragEnd = (e) => {
+    e.currentTarget.classList.remove("cell-drag-over");
+  };
+
   return (
     <>
-      {blocks.map((block, index) => (
-        <div
-          key={block?.id || `empty-${index}`}
-          className={`grid-cell ${block ? "has-block" : "empty-cell"}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            e.currentTarget.classList.add("cell-drag-over");
-          }}
-          onDragLeave={(e) => e.currentTarget.classList.remove("cell-drag-over")}
-          onDrop={(e) => {
-            e.currentTarget.classList.remove("cell-drag-over");
-            handleDrop(e, index);
-          }}
-        >
-          {block ? (
-            <>
-              {renderBlock(block, index)}
-              <button
-                className="delete-block-btn"
-                onClick={() => onInsertBlock(null, index)}
-              >
-                ×
-              </button>
-            </>
-          ) : (
-            <div className="drop-here-placeholder">Drop Here</div>
-          )}
-        </div>
-      ))}
-
-      {/* Final drop zone */}
+      {/* Top-level drop zone before the first block */}
       <div
-        className="grid-cell empty-cell drop-zone"
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.currentTarget.classList.add("cell-drag-over");
-        }}
-        onDragLeave={(e) => e.currentTarget.classList.remove("cell-drag-over")}
+        className="drop-zone-wrapper"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         onDrop={(e) => {
           e.currentTarget.classList.remove("cell-drag-over");
-          handleDrop(e, blocks.length);
+          handleDrop(e, 0);
         }}
       >
-        <div className="drop-here-placeholder">Drop Here</div>
+        <div className="invisible-hit-area" />
       </div>
+
+      {blocks.map((block, index) => (
+        <React.Fragment key={block?.id || `block-${index}`}>
+          <div className="block-container">
+            {renderBlock(block, index)}
+            <button
+              className="delete-block-btn"
+              onClick={() => onInsertBlock(null, index)}
+              type="button"
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Drop zone between blocks */}
+          <div
+            className="drop-zone-wrapper"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => {
+              e.currentTarget.classList.remove("cell-drag-over");
+              handleDrop(e, index + 1);
+            }}
+          >
+            <div className="invisible-hit-area" />
+          </div>
+        </React.Fragment>
+      ))}
     </>
   );
 };

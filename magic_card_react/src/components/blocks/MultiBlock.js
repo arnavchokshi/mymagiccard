@@ -11,10 +11,12 @@ const MultiBlock = ({
 }) => {
   return (
     <div
-      className="multi-block-column"
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => onDrop(e, null, parentIndex)}
-    >
+        className="multi-block-column"
+        style={{ gridTemplateColumns: `repeat(${block.content.length}, 1fr)` }}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => onDrop(e, null, parentIndex)}
+      >
+
       {(!block.content || block.content.length === 0) ? (
         <div className="drop-here-placeholder">Drop blocks here</div>
       ) : (
