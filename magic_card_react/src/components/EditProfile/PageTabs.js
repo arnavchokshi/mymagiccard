@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import "./PageTabs.css";
 
-const PageTabs = ({ pages, activePageId, onSwitchPage, onAddPage, onRenamePage }) => {
+const PageTabs = ({ pages, activePageId, onSwitchPage, onAddPage, onRenamePage, readOnly }) => {
   const [editingId, setEditingId] = useState(null);
   const [tempName, setTempName] = useState("");
 
   const handleRename = (id, name) => {
+    if (readOnly) return;
     setEditingId(id);
     setTempName(name);
   };
@@ -46,9 +47,11 @@ const PageTabs = ({ pages, activePageId, onSwitchPage, onAddPage, onRenamePage }
           )}
         </div>
       ))}
-      <button className="add-page-btn" onClick={onAddPage} type="button">
-        + Add Page
-      </button>
+      {!readOnly && (
+        <button className="add-page-btn" onClick={onAddPage} type="button">
+          + Add Page
+        </button>
+      )}
     </div>
   );
 };

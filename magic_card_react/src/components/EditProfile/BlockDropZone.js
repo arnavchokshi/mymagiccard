@@ -6,7 +6,8 @@ const BlockDropZone = ({
   blocks,
   draggedBlockType,
   onInsertBlock,
-  renderBlock
+  renderBlock,
+  isDragging
 }) => {
   const handleDrop = (e, dropIndex) => {
     e.preventDefault();
@@ -32,7 +33,7 @@ const BlockDropZone = ({
     <>
       {/* Top-level drop zone before the first block */}
       <div
-        className="drop-zone-wrapper"
+        className={`drop-zone-wrapper ${isDragging ? "is-dragging" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={(e) => {
@@ -58,7 +59,7 @@ const BlockDropZone = ({
 
           {/* Drop zone between blocks */}
           <div
-            className="drop-zone-wrapper"
+            className={`drop-zone-wrapper ${isDragging ? "is-dragging" : ""}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => {

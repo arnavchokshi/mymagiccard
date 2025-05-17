@@ -13,14 +13,14 @@
     background-color: rgba(0, 0, 0, 0.2);
     color: #fff;
     padding: 10px;
-    font-size: 14px;
+    font-size: 16px;
     resize: none;
     transition: all 0.3s ease;
   }
   
   .block-title {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 20px;
   }
   
   .block-textarea {

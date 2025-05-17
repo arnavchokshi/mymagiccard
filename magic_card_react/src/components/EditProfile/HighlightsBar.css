@@ -146,7 +146,7 @@
 }
 
 .highlight-badge.personal-development .highlight-label {
-  background: linear-gradient(45deg, #ff00cc, #3333ff);
+  background: linear-gradient(45deg, #5353ff, #ff00cc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -306,4 +306,42 @@
   100% {
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
+}
+.profile-text.profile-typewriter {
+  background: none;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.profile-name-typing,
+.profile-email-typing {
+  all: unset;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 36px;
+  color: #fff;
+  white-space: nowrap;
+  border-right: 2px solid rgba(255,255,255,0.75);
+  overflow: hidden;
+  animation: typing 3s steps(30, end), blink-caret 0.75s step-end infinite;
+  width: 100%;
+  max-width: 800px;
+  padding: 5px 10px;
+}
+
+.profile-email-typing {
+  font-size: 20px;
+  animation-delay: 0.5s;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: rgba(255,255,255,0.75) }
 }

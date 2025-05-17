@@ -18,7 +18,7 @@
     text-align: center;
     padding: 8px;
     color: #666;
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 5px;
   }
   
@@ -32,6 +32,7 @@
     padding: 10px;
     border-radius: 6px;
     resize: vertical;
+    font-size: 16px;
   }
   
   .code-block-preview {
@@ -57,4 +58,25 @@
   
   .code-block-container.highlight-drop {
     animation: pulse 1.5s infinite;
+  }
+
+  /* Read-only styles */
+  .code-block-container.readonly {
+    border: 1px solid rgba(179, 163, 105, 0.2);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 16px;
+  }
+  
+  .code-block-readonly {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 0;
+    white-space: pre-wrap;
+    line-height: 1.5;
   }

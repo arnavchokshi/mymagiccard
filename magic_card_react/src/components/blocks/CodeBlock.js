@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./CodeBlock.css";
 
-const CodeBlock = ({ content, onChange }) => {
+const CodeBlock = ({ content, onChange, readOnly }) => {
   const [code, setCode] = useState(content || "");
   const dropAreaRef = useRef(null);
   const editorRef = useRef(null);
@@ -10,11 +10,14 @@ const CodeBlock = ({ content, onChange }) => {
   // Handle normal input changes
   const handleInput = (e) => {
     setCode(e.target.value);
-    onChange(e.target.value);
+    onChange?.(e.target.value);
   };
 
   // Handle drag events
   useEffect(() => {
+    // Skip setting up drag events in readOnly mode
+    if (readOnly) return;
+    
     const dropArea = dropAreaRef.current;
     const editor = editorRef.current;
 
@@ -96,13 +99,29 @@ const CodeBlock = ({ content, onChange }) => {
       dropArea.removeEventListener("dragleave", handleDragLeave);
       dropArea.removeEventListener("drop", handleDrop);
     };
-  }, [code, onChange]);
+  }, [code, onChange, readOnly]);
 
   // Handle paste events to also support copy-paste drops
   const handlePaste = (e) => {
     // Default paste behavior is usually fine, but you could
     // customize it here if needed
   };
+
+  if (readOnly) {
+    return (
+      <div className="code-block-container readonly">
+        <pre className="code-block-readonly">{code || ""}</pre>
+        {code && (
+          <iframe
+            title="Live Preview"
+            sandbox="allow-scripts allow-same-origin"
+            srcDoc={code}
+            className="code-block-preview"
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="code-block-container" ref={dropAreaRef}>

@@ -7,31 +7,36 @@ const MultiBlock = ({
   renderBlock,
   onDrop,
   onChangeInner,
-  onRemoveInner
+  onRemoveInner,
+  readOnly
 }) => {
+  // Ensure block.content is always an array
+  const children = Array.isArray(block.content) ? block.content : [];
+
   return (
     <div
-        className="multi-block-column"
-        style={{ gridTemplateColumns: `repeat(${block.content.length}, 1fr)` }}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => onDrop(e, null, parentIndex)}
-      >
-
-      {(!block.content || block.content.length === 0) ? (
-        <div className="drop-here-placeholder">Drop blocks here</div>
+      className={`multi-block-column ${readOnly ? 'readonly' : ''}`}
+      style={{ gridTemplateColumns: `repeat(${children.length || 1}, 1fr)` }}
+      onDragOver={(e) => !readOnly && e.preventDefault()}
+      onDrop={(e) => !readOnly && onDrop && onDrop(e, null, parentIndex)}
+    >
+      {children.length === 0 ? (
+        !readOnly && <div className="drop-here-placeholder">Drop blocks here</div>
       ) : (
-        block.content.map((inner, i) => (
+        children.map((inner, i) => (
           <div key={inner.id} className="multi-inner-block">
-            <div className="block-header">
-              <span className="block-type-label">{inner.type}</span>
-              <button
-                className="remove-block-btn"
-                onClick={() => onRemoveInner(inner.id)}
-                type="button"
-              >
-                ×
-              </button>
-            </div>
+            {!readOnly && (
+              <div className="block-header">
+                <span className="block-type-label">{inner.type}</span>
+                <button
+                  className="remove-block-btn"
+                  onClick={() => onRemoveInner(inner.id)}
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <div className="block-content">
               {renderBlock(inner, i, onChangeInner)}
             </div>

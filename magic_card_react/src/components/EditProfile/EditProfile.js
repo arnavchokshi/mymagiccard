@@ -9,6 +9,9 @@ import CodeBlock from "../blocks/CodeBlock";
 import FlipBlock from "../blocks/FlipBlock";
 import ContactsBlock from "../blocks/ContactsBlock";
 import MultiBlock from "../blocks/MultiBlock";
+import YouTubeBlock from "../blocks/YouTubeBlock";
+import ImageBlock from "../blocks/ImageBlock";
+import TitleBlock from "../blocks/TitleBlock";
 
 // Layout Components
 import HighlightsBar from "./HighlightsBar";
@@ -20,9 +23,11 @@ import { generateUniqueBlockId, getDefaultBlockContent } from "./utils";
 
 const blockTypes = [
   { type: "text", label: "Text Block", tooltip: "Add simple text content" },
+  { type: "title", label: "Title Block", tooltip: "Add a title and subtitle" },
   { type: "link", label: "Link Block", tooltip: "Add a clickable link" },
+  { type: "youtube", label: "YouTube Link Block", tooltip: "Embed a YouTube video" }, // ✅ FIXED
   { type: "pdf", label: "PDF Block", tooltip: "Add PDF content" },
-  { type: "image", label: "Image Block", tooltip: "Add an image" },
+  { type: "image", label: "Image Block", tooltip: "Add an image or carousel" },,
   { type: "code", label: "Code Block", tooltip: "Add code with syntax highlighting" },
   { type: "divider", label: "Divider Line", tooltip: "Add a visual separator" },
   { type: "contactsText", label: "Contacts Block", tooltip: "Add contact information" },
@@ -31,7 +36,7 @@ const blockTypes = [
 ];
 
 const blockCategories = {
-  Content: ["text", "link", "pdf"],
+  Content: ["text", "link", "youtube", "pdf", "title"],
   Media: ["image", "code"],
   Layout: ["divider", "flip", "multiBlock"],
   Info: ["contactsText"]
@@ -39,6 +44,7 @@ const blockCategories = {
 
 const EditProfile = () => {
   const { id } = useParams();
+  
 
   const [formData, setFormData] = useState({
     name: "",
@@ -47,6 +53,10 @@ const EditProfile = () => {
     profilePhoto: ""
   });
 
+  const [typedText, setTypedText] = useState("");
+  const [isTypingAnimationDone, setIsTypingAnimationDone] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
   const [pages, setPages] = useState([{ id: "main", name: "Main", blocks: [] }]);
   const [activePageId, setActivePageId] = useState("main");
 
@@ -60,12 +70,20 @@ const EditProfile = () => {
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
 
-  const updateBlocksForActivePage = (newBlocks) => {
-    const updated = pages.map((p) =>
-      p.id === activePageId ? { ...p, blocks: newBlocks } : p
-    );
-    setPages(updated);
-  };
+  // Update typed text when name/email changes
+  useEffect(() => {
+    const text = `Hello, my name is ${formData.name || "Your Name"}! Contact me at ${formData.email || "your.email@example.com"}`;
+    setTypedText(text);
+  }, [formData.name, formData.email]);
+
+  // Set animation as complete after timeout
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsTypingAnimationDone(true);
+    }, 5000); // Animation completes after 5 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -97,6 +115,27 @@ const EditProfile = () => {
       setSidebarActive(true);
     }, 100);
   }, [id]);
+
+  // Handle typing text changes
+  const handleTypedTextChange = (e) => {
+    setTypedText(e.target.value);
+    
+    const match = e.target.value.match(/^Hello, my name is (.*?)! Contact me at <(.*?)>$/);
+    if (match) {
+      setFormData(prev => ({
+        ...prev,
+        name: match[1].trim(),
+        email: match[2].trim()
+      }));
+    }
+  };
+
+  const updateBlocksForActivePage = (newBlocks) => {
+    const updated = pages.map((p) =>
+      p.id === activePageId ? { ...p, blocks: newBlocks } : p
+    );
+    setPages(updated);
+  };
 
   const handleDrop = (e, dropIndex = blocksList.length, parentMultiBlockIndex = null) => {
     e.preventDefault();
@@ -151,6 +190,13 @@ const EditProfile = () => {
     switch (block.type) {
       case "text":
         return <TextBlock block={block} onChange={handleChange} />;
+      case "title":
+        return <TitleBlock block={block} onChange={handleChange} />;
+      case "youtube":
+        return <YouTubeBlock block={block} onChange={handleChange} />;
+      case "image":
+        return <ImageBlock block={block} onChange={handleChange} />;
+        
       case "link":
         return <LinkBlock block={block} onChange={handleChange} />;
       case "code":
@@ -347,14 +393,21 @@ const EditProfile = () => {
           </div>
         ))}
 
-        <div className="sidebar-category">
-          <div className="sidebar-category-title">Settings</div>
-          <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
-            Save Profile
-          </button>
-          <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
-            View Public Profile
-          </Link>
+          <div className="sidebar-category">
+            <div className="sidebar-category-title">Settings</div>
+            <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
+              Save Profile
+            </button>
+
+            <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
+              View Public Profile
+            </Link>
+
+            <Link to="/generate" className="block-option" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
+              Enhance with AI
+            </Link>
+
+
         </div>
       </aside>
 
@@ -378,21 +431,24 @@ const EditProfile = () => {
               }}
               style={{ display: "none" }}
             />
-            <div className="profile-text">
-              <textarea
-                className="code-input profile-name-input"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Your Name"
-              />
-              <textarea
-                className="code-input profile-email-input"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="your.email@example.com"
+            <div className="profile-text profile-single-line">
+              <input
+                className="profile-single-input"
+                value={typedText}
+                onChange={handleTypedTextChange}
+                onClick={() => setIsEditing(true)}
+                onBlur={() => setIsEditing(false)}
+                style={{
+                  animation: !isEditing && !isTypingAnimationDone ? 
+                    `typing 4s steps(${typedText.length}, end) forwards, blink-caret 0.75s step-end 4s 1` : 
+                    'none',
+                  width: (isEditing || isTypingAnimationDone) ? '100%' : '0',
+                  '--text-width': `${typedText.length}ch`,
+                  borderRight: isEditing ? '2px solid rgba(255, 255, 255, 0.75)' : 'none'
+                }}
               />
             </div>
-
+            
           </div>
         </div>
         
@@ -424,6 +480,7 @@ const EditProfile = () => {
             blocks={blocksList}
             draggedBlockType={draggedBlockType}
             renderBlock={renderBlock}
+            isDragging={isDragging}
             onInsertBlock={(type, index) => {
               const updated = [...blocksList];
               if (!type) {

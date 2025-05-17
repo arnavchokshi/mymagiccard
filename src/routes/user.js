@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const { authenticateToken } = require("../utils/authMiddleware");
 const multer = require("multer");
 const upload = multer(); // memory storage
+const ogs = require("open-graph-scraper");
 
 
 
@@ -150,7 +151,140 @@ router.get("/api/public/:id", async (req, res) => {
   
   
   
+  router.get("/link-preview", async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ message: "Missing URL" });
+  
+    try {
+      const { result } = await ogs({ url });
+  
+      let imageUrl = "";
+  
+      if (Array.isArray(result.ogImage)) {
+        imageUrl = result.ogImage[0]?.url || "";
+      } else if (typeof result.ogImage === "object") {
+        imageUrl = result.ogImage.url || "";
+      }
+  
+      return res.json({
+        title: result.ogTitle || "No title",
+        description: result.ogDescription || "",
+        image: imageUrl,
+        url: result.requestUrl || url,
+      });
+    } catch (err) {
+      console.error("Link preview error:", err.message);
+      res.status(500).json({ message: "Failed to fetch preview" });
+    }
+  });
   
 
-  
+  router.post("/generate-profile", async (req, res) => {
+  const { resumeText } = req.body;
+  if (!resumeText) return res.status(400).json({ message: "Missing resume text" });
+
+  try {
+    const openaiResponse = await openai.chat.completions.create({
+      model: "gpt-4o", // Use GPT-4o for longer outputs
+      temperature: 0.4,
+      messages: [
+        {
+          role: "system",
+          content: `You are a smart resume parser. Given a user's resume, return a complete and detailed JSON object that fits the following format: 
+{
+  name: string,
+  email: string,
+  highlights: [{label: string, category: string}],
+  pages: [
+    {id: string, name: string, blocks: [{id, type, content}]}
+  ],
+  activePageId: string
+}
+Use categories like Academic, Technical, Leadership, Extracurricular, Personal Development. Include full education, work experience, projects, leadership, and skills as structured blocks. Use 'text', 'link', 'code', 'contactsText', and 'multiBlock' types wherever possible.`
+        },
+        {
+          role: "user",
+          content: resumeText
+        }
+      ]
+    });
+
+    const jsonResult = openaiResponse.choices?.[0]?.message?.content;
+
+    // You may want to validate/sanitize this output before saving
+    const parsed = JSON.parse(jsonResult);
+    res.json(parsed);
+  } catch (err) {
+    console.error("❌ GPT Error:", err.message);
+    res.status(500).json({ message: "Failed to generate profile" });
+  }
+});
+
+const { default: ModelClient, isUnexpected } = require("@azure-rest/ai-inference");
+const { AzureKeyCredential } = require("@azure/core-auth");
+
+const token = process.env["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"]; // Make sure this is set in .env
+const endpoint = "https://models.github.ai/inference";
+const model = "openai/gpt-4.1";
+
+router.post("/generate-profile-from-resume", async (req, res) => {
+  const { resumeText } = req.body;
+
+  if (!resumeText) {
+    return res.status(400).json({ message: "Missing resume text" });
+  }
+
+  const client = ModelClient(endpoint, new AzureKeyCredential(token));
+
+  try {
+    const response = await client.path("/chat/completions").post({
+      body: {
+        messages: [
+          {
+            role: "system",
+            content: `You are a smart resume parser. Return a JSON object with these fields:
+{
+  name: string,
+  email: string,   // <- THIS MUST BE PRESENT
+  highlights: [{label: string, category: string}], // see categories below
+  pages: [...]
+}
+
+Allowed highlight categories are:
+- "Academic"
+- "Technical"
+- "Leadership"
+- "Extracurricular"
+- "Personal Development"
+DO NOT use categories like "Education" or "Research".`
+          },
+          { role: "user", content: resumeText }
+        ],
+        temperature: 0.4,
+        top_p: 1,
+        model: model
+      }
+    });
+
+    if (isUnexpected(response)) {
+      throw response.body.error;
+    }
+
+    const result = response.body.choices[0].message.content;
+
+    try {
+      const json = JSON.parse(result); // validate it's actual JSON
+      res.json(json);
+    } catch (err) {
+      console.error("⚠️ GPT response not valid JSON:", result);
+      res.status(500).json({ message: "Failed to parse GPT response", raw: result });
+    }
+
+  } catch (err) {
+    console.error("❌ Error calling Azure GPT:", err);
+    res.status(500).json({ message: "Azure GPT error", error: err });
+  }
+});
+
+
 module.exports = router;

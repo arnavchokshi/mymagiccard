@@ -1,15 +1,14 @@
 .multi-block-column {
   display: flex;
   flex-direction: row; /* Changed from column to row */
-  gap: 10px;
-  padding: 10px;
+  gap: 15px; /* Increased from 10px for better spacing */
+  padding: 15px; /* Increased from 10px */
   min-height: 100px;
   border: 1px dashed rgba(179, 163, 105, 0.3);
   background-color: rgba(30, 30, 30, 0.4);
   border-radius: 10px;
   flex-wrap: wrap; /* Optional: allow wrapping on small screens */
 }
-
   
 .multi-inner-block {
   flex: 1 1 100%;
@@ -19,8 +18,8 @@
 
 .multi-block-column {
   display: grid;
-  gap: 10px;
-  padding: 10px;
+  gap: 15px; /* Increased from 10px */
+  padding: 15px; /* Increased from 10px */
   min-height: 120px;
   border: 2px dashed rgba(255, 255, 255, 0.3);
   background-color: rgba(30, 30, 30, 0.4);
@@ -37,7 +36,4 @@
   width: 100%;
 }
 
-/* Let JS assign grid-template-columns based on block count */
-
-
-  
+/* Let JS assign grid-template-columns based on block count */ 

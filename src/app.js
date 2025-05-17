@@ -2,12 +2,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require("cors");
-require("dotenv").config();
 
 const signupRoute = require('./routes/signup');
 const loginRoute = require('./routes/login');
 const userRoute = require('./routes/user');
 const createAdminAccount = require("./scripts/admin");
+require("dotenv").config();
+const imageUploadRoute = require("./routes/imageUpload");
+
+
 
 const app = express();
 const PORT = process.env.PORT || 2000;
@@ -27,6 +30,7 @@ mongoose.connect('mongodb+srv://chokshiarnav:CnR7UHD6hGFxlSw9@majiccluster.edhrv
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
+app.use("/api", imageUploadRoute);
 
 // Create default admin
 createAdminAccount();
@@ -35,6 +39,9 @@ createAdminAccount();
 app.get('/', (req, res) => {
   res.send('Server is up and running!');
 });
+
+const generateRoute = require("./routes/generateProfile");
+app.use("/api", generateRoute);
 
 // Mount routes
 app.use('/user', signupRoute);    // e.g. /user/register

@@ -1,0 +1,45 @@
+.youtube-block-wrapper {
+    margin-bottom: 20px;
+  }
+  
+  .youtube-url-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(179, 163, 105, 0.4);
+    border-radius: 6px;
+    color: white;
+    outline: none;
+    margin-bottom: 10px;
+  }
+  
+  .youtube-video iframe {
+    border-radius: 10px;
+    max-width: 100%;
+  }
+  
+  .youtube-block.readonly {
+    padding: 16px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(179, 163, 105, 0.2);
+  }
+  
+  .youtube-block.readonly iframe {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .youtube-invalid-url {
+    padding: 12px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    text-align: center;
+  }
+  
+  .youtube-invalid-url a {
+    color: #4e8cff;
+    text-decoration: underline;
+  }
+  

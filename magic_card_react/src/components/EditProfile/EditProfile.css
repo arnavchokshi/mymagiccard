@@ -1,25 +1,26 @@
 :root {
   --primary-neon: #b3a369;
   --primary-dark: #0f0f0f;
-  --glass-bg: rgba(15, 15, 15, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(15, 15, 15, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.15);
   --sidebar-width: 250px;
   --sidebar-padding: 20px;
   --transition-speed: 0.3s;
   --sidebar-highlight: rgba(179, 163, 105, 0.15);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --floating-elevation: 10px;
 }
 
 /* Global page styling */
 body {
-  background-color: #0f0f0f;
+  background-color: transparent;
   font-family: 'Outfit', 'Inter', sans-serif;
   color: #fff;
   margin: 0;
   padding: 0;
-  /* ✅ REMOVE THIS LINE ↓↓↓ */
-  /* background: url("../../../public/defaultBackground.jpg") no-repeat center center fixed; */
-  /* ✅ REMOVE THIS TOO ↓↓↓ */
-  /* background-size: cover; */
+  background: none;
+  font-size: 18px; /* Increased base font size */
+  overflow-x: hidden;
 }
 
 
@@ -39,6 +40,8 @@ body {
   background-size: cover;
   background-position: center;
   z-index: -1; /* go behind everything */
+  opacity: 1; /* Full opacity */
+  min-height: 100%;
 }
 
 
@@ -49,22 +52,32 @@ body {
 
 /* Overlay on top of image with name + email */
 .profile-header-overlay {
-  height: 100%;
+  height: 100vh;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none; /* Allow clicks to pass through */
 }
 
-
 .profile-text {
-  z-index: 2;
+  z-index: 51;
+  pointer-events: auto; /* Allow interaction with inputs */
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 30px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(179, 163, 105, 0.2);
 }
 
 .profile-name {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 70;
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -77,63 +90,51 @@ body {
 
 /* Section that scrolls below the image */
 .profile-editor {
-  padding-top: 100vh; /* or whatever height you need */
-  padding-left: 0;
-  padding-right: 35px;
-  padding-bottom: 40px;
-  margin-left: 0;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1;
+  padding-top: 100vh;
+  padding-bottom: 100px;
   position: relative;
+  z-index: 1;
+  background: transparent !important; /* Ensure background is transparent to show the image */
+  background-color: transparent !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-
-
-
-.content-panel {
-  background-color: rgba(0, 0, 0, 0.6); /* semi-transparent black */
-  padding: 30px;
-  margin-top: 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(6px); /* optional glassy feel */
-}
-
-.main-content {
-  background-color: rgba(0, 0, 0, 0.896);  /* semi-transparent black */
-  padding: 30px;
-  border-radius: 10px;
-  margin-top: 10px;
-  box-sizing: border-box;
-  width: 164vh;
-}
-
-
-
 
 .edit-page {
   display: flex;
-  height: auto;
   position: relative;
   width: 100%;
-  margin-left: 275px;
+  margin-left: var(--sidebar-width);
   box-sizing: border-box;
 }
 
-
+.main-content {
+  width: 88%;
+  padding: 80px 70px;
+  box-sizing: border-box;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 200px 200px 0 0;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 5;
+  margin-top: 20px;
+  margin-left: -230px;
+}
 
 .sidebar {
   width: var(--sidebar-width);
   padding: var(--sidebar-padding);
-  background-color: var(--glass-bg);
+  background-color: rgba(15, 15, 15, 0.75); /* Explicitly define with rgba instead of var */
   display: flex;
   flex-direction: column;
   border-right: 1px solid rgba(179, 163, 105, 0.3);
-  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
+  box-shadow: 5px 0 25px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(15px);
   transition: all var(--transition-speed) ease;
   position: fixed;
-  top: 0;
+  top: 56px; /* To account for the header height */
   bottom: 0;
   left: 0;
   overflow-y: auto;
@@ -183,7 +184,7 @@ body {
 
 .sidebar-header h2 {
   color: var(--primary-neon);
-  font-size: 18px;
+  font-size: 22px; /* Increased from 18px */
   margin: 0;
   position: relative;
   display: inline-block;
@@ -205,25 +206,34 @@ body {
 }
 
 .block-options-container {
-  margin-bottom: 25px;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .block-option {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--primary-neon);
+  display: flex;
+  align-items: center;
   padding: 12px 16px;
-  border: 1px solid rgba(179, 163, 105, 0.3);
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 15px;
-  text-align: center;
-  transition: all var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  background-color: rgba(30, 30, 30, 0.6);
+  color: #fff;
   cursor: pointer;
+  transition: all 0.25s ease;
   position: relative;
-  overflow: hidden;
+  border: 1px solid rgba(179, 163, 105, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  font-size: 16px; /* Added font size */
+}
+
+.block-option:hover {
+  background-color: rgba(40, 40, 40, 0.8);
+  color: var(--primary-neon);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border-color: rgba(179, 163, 105, 0.3);
 }
 
 .block-option::before {
@@ -242,16 +252,6 @@ body {
   transition: all 0.6s ease;
 }
 
-.block-option:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
-              0 0 0 1px rgba(179, 163, 105, 0.4),
-              0 0 20px rgba(179, 163, 105, 0.2);
-  color: #fff;
-  letter-spacing: 0.5px;
-}
-
 .block-option:hover::before {
   left: 100%;
 }
@@ -268,7 +268,7 @@ body {
 
 .sidebar-category-title {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
+  font-size: 15px; /* Increased from 12px */
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 10px;
@@ -283,7 +283,7 @@ body {
   border-radius: 6px;
   padding: 12px;
   width: 100%;
-  font-size: 14px;
+  font-size: 17px; /* Increased from 14px */
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-speed) ease;
@@ -371,7 +371,7 @@ body {
   color: var(--primary-neon);
   padding: 5px 10px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px; /* Increased from 12px */
   white-space: nowrap;
   z-index: 10;
   opacity: 0;
@@ -396,25 +396,112 @@ body {
   }
   .profile-editor {
     margin-left: 200px;
+    display: flex;
+  flex-direction: column;
   }
 }
 
-/* Blocks section */
+/* Block styling */
 .blocks-list {
-  padding-top: 20px;
-  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  perspective: 1000px; /* For 3D effects */
+}
+
+.vertical-blocks-group {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+
+.horizontal-blocks-group {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.horizontal-blocks-group .title-container {
+  width: 100%;
+}
+
+.horizontal-blocks-group > div:not(.title-container):not(.block-drop-zone) {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 20px;
+  padding: 20px 0;
+  width: 100%;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  margin-left: 40px;
+  position: relative;
+  perspective: 1000px;
+}
+
+.horizontal-blocks-group:not(.title-container) .block-container {
+  width: 250px; /* Reduced from 300px */
+  flex: 0 0 auto;
+  transform: perspective(800px) rotateY(0deg) scale(0.95);
+  opacity: 0.9;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+}
+
+.horizontal-blocks-group:not(.title-container) .block-container:hover {
+  transform: perspective(800px) rotateY(0deg) scale(1);
+  opacity: 1;
+  z-index: 10;
+}
+
+.horizontal-blocks-group > div::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-blocks-group > div::-webkit-scrollbar-track {
+  background: rgba(15, 15, 15, 0.2);
+  border-radius: 10px;
+}
+
+.horizontal-blocks-group > div::-webkit-scrollbar-thumb {
+  background-color: var(--primary-neon);
+  border-radius: 10px;
+}
+
+/* Make blocks feel like they're floating */
+.block-container {
+  position: relative;
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+/* Create 3D carousel effect when scrolling */
+@keyframes floatIn {
+  from {
+    transform: perspective(800px) rotateY(25deg) translateZ(100px);
+    opacity: 0;
+  }
+  to {
+    transform: perspective(800px) rotateY(0) translateZ(0);
+    opacity: 1;
+  }
 }
 
 .divider-line {
   height: 1px;
   background: linear-gradient(to right, transparent, rgba(179, 163, 105, 0.5), transparent);
-  margin: 20px 0;
+  margin: 30px 0;
 }
 
 .divider-line-only {
   height: 1px;
   background: linear-gradient(to right, transparent, rgba(179, 163, 105, 0.5), transparent);
-  margin: 30px 0;
+  margin: 40px 0;
+  width: 100%;
 }
 
 img {
@@ -425,18 +512,30 @@ img {
 
 .profile-name-input,
 .profile-email-input {
-  background-color: rgba(20, 20, 20, 0.7);
+  background-color: rgba(20, 20, 20, 0.4);
   border: 1px solid var(--primary-neon);
-  border-radius: 6px;
+  border-radius: 12px;
   color: #fff;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 16px;
-  padding: 10px;
-  width: 80%;
-  margin-bottom: 10px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 34px; /* Increased from 28px */
+  padding: 15px;
+  width: 100%;
+  margin-bottom: 15px;
   resize: none;
   text-align: center;
   outline: none;
+  transition: all 0.3s ease;
+}
+
+.profile-email-input {
+  font-size: 22px; /* Increased from 18px */
+}
+
+.profile-name-input:focus,
+.profile-email-input:focus {
+  background-color: rgba(30, 30, 30, 0.6);
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(179, 163, 105, 0.3);
 }
 
 .profile-name-input::placeholder,
@@ -448,6 +547,109 @@ img {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  z-index: 2;
+  gap: 20px;
+  width: 500px;
+  max-width: 90%;
+}
+
+/* Horizontal scroll container */
+.horizontal-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  padding: 20px 0;
+  gap: 20px;
+  width: 100%;
+  -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+  scrollbar-width: thin;
+  margin-left: 40px;
+  position: relative;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  padding-bottom: 20px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+  background: rgba(15, 15, 15, 0.2);
+  border-radius: 10px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary-neon);
+  border-radius: 10px;
+}
+
+.horizontal-scroll-container .block-container {
+  flex: 0 0 auto;
+  width: 250px; /* Reduced from 300px */
+  transform: perspective(800px) rotateY(0deg) scale(0.95);
+  opacity: 0.9;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+}
+
+.horizontal-scroll-container .block-container:hover {
+  transform: perspective(800px) rotateY(0deg) scale(1);
+  opacity: 1;
+  z-index: 10;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Create 3D carousel effect when scrolling */
+.horizontal-scroll-container .block-container:nth-child(odd) {
+  animation: floatIn 0.6s 0.1s both;
+}
+
+.horizontal-scroll-container .block-container:nth-child(even) {
+  animation: floatIn 0.6s 0.2s both;
+}
+.profile-text.profile-single-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  width: 100%;
+  max-width: 1000px;
+  cursor: text;
+}
+
+/* Updated typing animation styles */
+.profile-single-input {
+  all: unset;
+  font-family: 'Courier New', monospace;
+  font-size: 26px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
+  max-width: 900vw;
+  display: inline-block;
+  border-right: 2px solid rgba(255, 255, 255, 0.75);
+  cursor: text;
+  transition: all 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 10px 20px;
+}
+
+.profile-single-input:focus {
+  outline: none;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: var(--text-width); } /* Uses the calculated width from React */
+}
+
+@keyframes blink-caret {
+  0%, 50% { border-color: rgba(255, 255, 255, 0.75); }
+  100% { border-color: black; }
 }

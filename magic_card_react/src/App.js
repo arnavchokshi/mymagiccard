@@ -5,6 +5,7 @@ import Signup from "./pages/auth/signup/Signup";
 import Dashboard from "./pages/dashboard/Dashboard";
 import UserPage from './pages/user/UserPage';
 import EditProfile from "./components/EditProfile/EditProfile";
+import ResumeToProfile from "./components/EditProfile/ResumeToProfile"
 
 
 
@@ -18,6 +19,8 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/user/:id" element={<UserPage />} />
         <Route path="/user/:id/edit" element={<EditProfile />} />
+        <Route path="/generate" element={<ResumeToProfile />} />
+
       </Routes>
     </>
   );
