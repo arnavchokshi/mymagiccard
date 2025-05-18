@@ -11,6 +11,7 @@ import MultiBlock from "../../components/blocks/MultiBlock";
 import YouTubeBlock from "../../components/blocks/YouTubeBlock";
 import ImageBlock from "../../components/blocks/ImageBlock";
 import TitleBlock from "../../components/blocks/TitleBlock";
+import SideBySideBlock from "../../components/blocks/SideBySideBlock";
 
 // Import HighlightsBar CSS
 import "../../components/EditProfile/HighlightsBar.css";
@@ -52,7 +53,8 @@ const UserPage = () => {
     name: "",
     email: "",
     highlights: [],
-    profilePhoto: ""
+    backgroundPhoto: "",
+    header: "Hello, my name is Your Name! Contact me at your.email@example.com"
   });
   
   const [pages, setPages] = useState([{ id: "main", name: "Main", blocks: [] }]);
@@ -63,11 +65,10 @@ const UserPage = () => {
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
 
-  // Update typed text when name/email changes
+  // Update typed text when header is available
   useEffect(() => {
-    const text = `Hello, my name is ${userData.name || "Your Name"}! Contact me at ${userData.email || "your.email@example.com"}`;
-    setTypedText(text);
-  }, [userData.name, userData.email]);
+    setTypedText(userData.header || `Hello, my name is ${userData.name || "Your Name"}! Contact me at ${userData.email || "your.email@example.com"}`);
+  }, [userData.header, userData.name, userData.email]);
 
   // Set animation as complete after timeout
   useEffect(() => {
@@ -88,7 +89,8 @@ const UserPage = () => {
           name: data.name || "",
           email: data.email || "",
           highlights: Array.isArray(data.highlights) ? data.highlights : [],
-          profilePhoto: data.profilePhoto || ""
+          backgroundPhoto: data.backgroundPhoto || "",
+          header: data.header || `Hello, my name is ${data.name || "Your Name"}! Contact me at ${data.email || "your.email@example.com"}`
         });
 
         if (Array.isArray(data.pages)) {
@@ -164,27 +166,31 @@ const UserPage = () => {
             <FlipBlock block={safeBlock} readOnly />
           </UserBlockWrapper>
         );
+      case "multiBlock":
+        return (
+          <UserBlockWrapper type="multi">
+            <MultiBlock
+              block={safeBlock}
+              renderBlock={renderBlock}
+              readOnly
+            />
+          </UserBlockWrapper>
+        );
       case "contactsText":
         return (
           <UserBlockWrapper type="contacts">
             <ContactsBlock block={safeBlock} readOnly />
           </UserBlockWrapper>
         );
-      case "divider":
-        return <div className="user-divider-block" />;
-      case "multiBlock":
+      case "sideBySide":
         return (
-          <div className="user-multi-block">
-            {safeBlock.content &&
-              Array.isArray(safeBlock.content) &&
-              safeBlock.content.map((innerBlock, idx) => (
-                <div key={innerBlock.id || `inner-${idx}`} className="user-multi-inner-block">
-                  <div className="user-multi-block-content">
-                    {renderBlock(innerBlock, idx)}
-                  </div>
-                </div>
-              ))}
-          </div>
+          <UserBlockWrapper type="side-by-side">
+            <SideBySideBlock
+              block={safeBlock}
+              renderBlock={renderBlock}
+              readOnly
+            />
+          </UserBlockWrapper>
         );
       default:
         return <div className="user-placeholder-block">{block.type.toUpperCase()} BLOCK</div>;
@@ -211,7 +217,7 @@ const UserPage = () => {
   };
 
   // Background image URL
-  const backgroundImage = userData.profilePhoto || '/defaultBackground.jpg';
+  const backgroundImage = userData.backgroundPhoto || '/defaultBackground.jpg';
 
   return (
     <div className="user-page-viewer">

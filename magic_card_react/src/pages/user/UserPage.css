@@ -502,3 +502,35 @@
 .user-profile-content {
     margin-top: 87vh; /* adjust this value as needed */
   }
+
+/* Side by side block styles */
+.user-side-by-side-block-wrapper {
+  margin: 20px 0;
+  width: 100%;
+}
+
+.user-side-by-side-block-wrapper .side-by-side-block {
+  margin-bottom: 0;
+}
+
+.user-side-by-side-block-wrapper .side-by-side-container {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+}
+
+.user-side-by-side-block-wrapper .side-block {
+  flex: 1;
+  min-height: 100px;
+  border-radius: 12px; 
+  background-color: rgba(30, 30, 30, 0.3);
+  border: 1px solid rgba(179, 163, 105, 0.2);
+  padding: 15px;
+}
+
+@media (max-width: 768px) {
+  .user-side-by-side-block-wrapper .side-by-side-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+}

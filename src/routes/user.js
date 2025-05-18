@@ -5,8 +5,19 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { authenticateToken } = require("../utils/authMiddleware");
 const multer = require("multer");
-const upload = multer(); // memory storage
+// Use disk storage for uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage });
 const ogs = require("open-graph-scraper");
+const path = require("path");
 
 
 
@@ -61,8 +72,9 @@ router.get("/api/public/:id", async (req, res) => {
       res.json({
         name: user.name,
         email: user.email,
+        header: user.header,
         highlights: user.highlights,
-        profilePhoto: user.profilePhoto,
+        backgroundPhoto: user.backgroundPhoto,
         pages: user.pages,
         activePageId: user.activePageId
       });
@@ -86,8 +98,9 @@ router.get("/api/public/:id", async (req, res) => {
       res.json({
         name: user.name,
         email: user.email,
+        header: user.header,
         highlights: user.highlights,
-        profilePhoto: user.profilePhoto,
+        backgroundPhoto: user.backgroundPhoto,
         pages: user.pages,
         activePageId: user.activePageId
       });
@@ -99,21 +112,24 @@ router.get("/api/public/:id", async (req, res) => {
 
 
 
-  router.post("/setup", authenticateToken, upload.none(), async (req, res) => {
+  router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async (req, res) => {
     try {
       console.log("🔥 req.body:", req.body);
+      console.log("🔥 req.file:", req.file);
   
       const {
         name,
         email,
+        header,
         highlights,
         pages,
         blocksList,
         activePageId,
-        profilePhotoUrl
+        backgroundPhotoUrl
       } = req.body;
   
       console.log("🔍 name:", name);
+      console.log("🔍 header:", header);
       console.log("🔍 highlights (raw):", highlights);
       console.log("🔍 pages (raw):", pages);
   
@@ -122,27 +138,45 @@ router.get("/api/public/:id", async (req, res) => {
       const update = {
         name,
         email,
+        header,
         highlights: JSON.parse(highlights),
         pages: parsedPages.pages,
         activePageId: parsedPages.activePageId
       };
   
-      if (profilePhotoUrl) update.profilePhoto = profilePhotoUrl;
+      // Only set backgroundPhoto if file and filename are defined
+      if (req.file && req.file.filename) {
+        update.backgroundPhoto = `http://localhost:2000/uploads/${req.file.filename}`;
+      } else if (backgroundPhotoUrl) {
+        update.backgroundPhoto = backgroundPhotoUrl;
+      }
   
       const user = await User.findById(req.user.id || req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.name = update.name;
     user.email = update.email;
+    user.header = update.header;
     user.highlights = update.highlights;
     user.pages = update.pages;
     user.activePageId = update.activePageId;
-    if (update.profilePhoto) user.profilePhoto = update.profilePhoto;
+    if (update.backgroundPhoto) user.backgroundPhoto = update.backgroundPhoto;
 
     await user.save();  // ✅ ensures Mongoose uses schema correctly
 
   
-      res.status(200).json({ message: "Profile updated successfully." });
+      res.status(200).json({
+        message: "Profile updated successfully.",
+        user: {
+          name: user.name,
+          email: user.email,
+          header: user.header,
+          highlights: user.highlights,
+          backgroundPhoto: user.backgroundPhoto,
+          pages: user.pages,
+          activePageId: user.activePageId
+        }
+      });
     } catch (err) {
       console.error("❌ Profile update error:", err);
       res.status(500).json({ message: "Server error during profile update" });
@@ -286,5 +320,24 @@ DO NOT use categories like "Education" or "Research".`
   }
 });
 
+// ✅ GET current user profile
+router.get("/me", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id || req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({
+      name: user.name,
+      email: user.email,
+      header: user.header,
+      highlights: user.highlights,
+      backgroundPhoto: user.backgroundPhoto,
+      pages: user.pages,
+      activePageId: user.activePageId
+    });
+  } catch (err) {
+    console.error("Error fetching /me:", err);
+    res.status(500).json({ message: "Server error fetching profile" });
+  }
+});
 
 module.exports = router;

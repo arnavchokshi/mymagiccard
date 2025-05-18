@@ -1,0 +1,58 @@
+.side-by-side-block {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.side-by-side-container {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.side-block {
+  flex: 1;
+  min-height: 100px;
+  border-radius: 12px;
+  background-color: rgba(30, 30, 30, 0.4);
+  border: 1px solid rgba(179, 163, 105, 0.2);
+  transition: all 0.3s ease;
+  padding: 15px;
+}
+
+.side-block.empty-slot {
+  border: 2px dashed rgba(179, 163, 105, 0.3);
+  background-color: rgba(30, 30, 30, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-block.side-drop-active {
+  background-color: rgba(179, 163, 105, 0.1);
+  border-color: rgba(179, 163, 105, 0.8);
+  box-shadow: 0 0 15px rgba(179, 163, 105, 0.3);
+  transform: scale(1.02);
+}
+
+.empty-side-message {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+/* Ensure blocks inside the side-by-side container have proper styling */
+.side-block > * {
+  height: 100%;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .side-by-side-container {
+    flex-direction: column;
+  }
+  
+  .side-block {
+    width: 100%;
+  }
+} 

@@ -48,6 +48,9 @@ app.use('/user', signupRoute);    // e.g. /user/register
 app.use('/auth', loginRoute);     // e.g. /auth/login
 app.use('/api', userRoute);       // includes /api/public/:id, /api/setup, etc.
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server is running on: http://localhost:${PORT}`);

@@ -1,47 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 import "./MultiBlock.css";
 
 const MultiBlock = ({
   block,
-  parentIndex,
   renderBlock,
+  parentIndex,
   onDrop,
-  onChangeInner,
-  onRemoveInner,
   readOnly
 }) => {
-  // Ensure block.content is always an array
   const children = Array.isArray(block.content) ? block.content : [];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const itemCount = children.length;
+
+  const next = () => setActiveIndex((prev) => (prev + 1) % itemCount);
+  const prev = () => setActiveIndex((prev) => (prev - 1 + itemCount) % itemCount);
 
   return (
     <div
-      className={`multi-block-column ${readOnly ? 'readonly' : ''}`}
-      style={{ gridTemplateColumns: `repeat(${children.length || 1}, 1fr)` }}
+      className="multi-block-carousel-container"
       onDragOver={(e) => !readOnly && e.preventDefault()}
       onDrop={(e) => !readOnly && onDrop && onDrop(e, null, parentIndex)}
     >
-      {children.length === 0 ? (
-        !readOnly && <div className="drop-here-placeholder">Drop blocks here</div>
-      ) : (
-        children.map((inner, i) => (
-          <div key={inner.id} className="multi-inner-block">
-            {!readOnly && (
-              <div className="block-header">
-                <span className="block-type-label">{inner.type}</span>
-                <button
-                  className="remove-block-btn"
-                  onClick={() => onRemoveInner(inner.id)}
-                  type="button"
-                >
-                  ×
-                </button>
+      <div
+        className="multi-block-carousel"
+        style={{ transform: `rotateY(-${(360 / itemCount) * activeIndex}deg)` }}
+      >
+        {children.map((child, i) => {
+          const zDistance = Math.max(200, 80 + itemCount * 40);
+          return (
+            <figure
+              key={child.id || i}
+              style={{ transform: `rotateY(${(360 / itemCount) * i}deg) translateZ(${zDistance}px)` }}
+              className={i === activeIndex ? "active" : ""}
+            >
+              <div className="block-wrapper-inside-carousel">
+                {renderBlock(child, i)}
               </div>
-            )}
-            <div className="block-content">
-              {renderBlock(inner, i, onChangeInner)}
-            </div>
-          </div>
-        ))
+            </figure>
+          );
+        })}
+      </div>
+
+      {itemCount > 1 && (
+        <div className="carousel-controls">
+          <button onClick={prev}>◀</button>
+          <button onClick={next}>▶</button>
+        </div>
       )}
     </div>
   );

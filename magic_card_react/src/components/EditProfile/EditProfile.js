@@ -12,6 +12,8 @@ import MultiBlock from "../blocks/MultiBlock";
 import YouTubeBlock from "../blocks/YouTubeBlock";
 import ImageBlock from "../blocks/ImageBlock";
 import TitleBlock from "../blocks/TitleBlock";
+import SideBySideBlock from "../blocks/SideBySideBlock";
+import PDFBlock from "../blocks/PDFBlock";
 
 // Layout Components
 import HighlightsBar from "./HighlightsBar";
@@ -25,20 +27,21 @@ const blockTypes = [
   { type: "text", label: "Text Block", tooltip: "Add simple text content" },
   { type: "title", label: "Title Block", tooltip: "Add a title and subtitle" },
   { type: "link", label: "Link Block", tooltip: "Add a clickable link" },
-  { type: "youtube", label: "YouTube Link Block", tooltip: "Embed a YouTube video" }, // ✅ FIXED
+  { type: "youtube", label: "YouTube Link Block", tooltip: "Embed a YouTube video" },
   { type: "pdf", label: "PDF Block", tooltip: "Add PDF content" },
-  { type: "image", label: "Image Block", tooltip: "Add an image or carousel" },,
+  { type: "image", label: "Image Block", tooltip: "Add an image or carousel" },
   { type: "code", label: "Code Block", tooltip: "Add code with syntax highlighting" },
   { type: "divider", label: "Divider Line", tooltip: "Add a visual separator" },
   { type: "contactsText", label: "Contacts Block", tooltip: "Add contact information" },
   { type: "flip", label: "Flip Block", tooltip: "Add flippable content" },
-  { type: "multiBlock", label: "Multi Block", tooltip: "Combine multiple blocks" }
+  { type: "multiBlock", label: "Multi Block", tooltip: "Combine multiple blocks" },
+  { type: "sideBySide", label: "Side by Side", tooltip: "Place two blocks side by side" }
 ];
 
 const blockCategories = {
   Content: ["text", "link", "youtube", "pdf", "title"],
   Media: ["image", "code"],
-  Layout: ["divider", "flip", "multiBlock"],
+  Layout: ["divider", "flip", "multiBlock", "sideBySide"],
   Info: ["contactsText"]
 };
 
@@ -50,7 +53,8 @@ const EditProfile = () => {
     name: "",
     email: "",
     highlights: [],
-    profilePhoto: ""
+    backgroundPhoto: "",
+    header: "Hello, my name is Your Name! Contact me at your.email@example.com"
   });
 
   const [typedText, setTypedText] = useState("");
@@ -70,11 +74,10 @@ const EditProfile = () => {
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
 
-  // Update typed text when name/email changes
+  // Update typed text when header changes
   useEffect(() => {
-    const text = `Hello, my name is ${formData.name || "Your Name"}! Contact me at ${formData.email || "your.email@example.com"}`;
-    setTypedText(text);
-  }, [formData.name, formData.email]);
+    setTypedText(formData.header || `Hello, my name is ${formData.name || "Your Name"}! Contact me at ${formData.email || "your.email@example.com"}`);
+  }, [formData.header, formData.name, formData.email]);
 
   // Set animation as complete after timeout
   useEffect(() => {
@@ -88,16 +91,37 @@ const EditProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const res = await fetch("http://localhost:2000/api/me", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setFormData({
+              name: data.name || "",
+              email: data.email || "",
+              highlights: Array.isArray(data.highlights) ? data.highlights : [],
+              backgroundPhoto: data.backgroundPhoto || "",
+              header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com"
+            });
+            if (Array.isArray(data.pages)) {
+              setPages(data.pages);
+              setActivePageId(data.activePageId || "main");
+            }
+            return;
+          }
+        }
+        // fallback to public fetch if no token or /api/me fails
         const res = await fetch(`http://localhost:2000/api/public/${id}`);
         const data = await res.json();
-
         setFormData({
           name: data.name || "",
           email: data.email || "",
           highlights: Array.isArray(data.highlights) ? data.highlights : [],
-          profilePhoto: data.profilePhoto || ""
+          backgroundPhoto: data.backgroundPhoto || "",
+          header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com"
         });
-
         if (Array.isArray(data.pages)) {
           setPages(data.pages);
           setActivePageId(data.activePageId || "main");
@@ -118,9 +142,17 @@ const EditProfile = () => {
 
   // Handle typing text changes
   const handleTypedTextChange = (e) => {
-    setTypedText(e.target.value);
+    const newText = e.target.value;
+    setTypedText(newText);
     
-    const match = e.target.value.match(/^Hello, my name is (.*?)! Contact me at <(.*?)>$/);
+    // Update the header in formData
+    setFormData(prev => ({
+      ...prev,
+      header: newText
+    }));
+    
+    // Also try to extract name/email if it matches the pattern
+    const match = newText.match(/^Hello, my name is (.*?)! Contact me at (.*?)$/);
     if (match) {
       setFormData(prev => ({
         ...prev,
@@ -214,6 +246,54 @@ const EditProfile = () => {
         );
       case "divider":
         return <div className="divider-line-only" />;
+      case "sideBySide":
+        const updateSideBlock = (sideIndex, newBlock) => {
+          const updatedContent = [...(block.content || [null, null])];
+          updatedContent[sideIndex] = newBlock;
+          updateBlock(index, { ...block, content: updatedContent });
+        };
+        
+        const handleSideBySideDrop = (e, sideIndex, parentIndex) => {
+          e.preventDefault();
+          const blockType = e.dataTransfer.getData("block-type") || draggedBlockType;
+          if (!blockType) return;
+          
+          const newBlock = {
+            id: generateUniqueBlockId(),
+            type: blockType,
+            content: getDefaultBlockContent(blockType)
+          };
+          
+          updateSideBlock(sideIndex, newBlock);
+          setDraggedBlockType(null);
+          setIsDragging(false);
+        };
+        
+        return (
+          <SideBySideBlock
+            block={block}
+            parentIndex={index}
+            renderBlock={(sideBlock, sideIndex) => {
+              if (!sideBlock) return null;
+              return renderBlock(
+                sideBlock,
+                sideIndex,
+                (blockId, value) => {
+                  const updatedContent = [...(block.content || [])];
+                  const blockIndex = updatedContent.findIndex(b => b?.id === blockId);
+                  if (blockIndex !== -1) {
+                    updatedContent[blockIndex] = {
+                      ...updatedContent[blockIndex],
+                      content: value
+                    };
+                    updateBlock(index, { ...block, content: updatedContent });
+                  }
+                }
+              );
+            }}
+            onDrop={handleSideBySideDrop}
+          />
+        );
       case "multiBlock":
         const updateInner = (innerId, newContent) => {
           const updated = block.content.map((b) =>
@@ -235,6 +315,8 @@ const EditProfile = () => {
             onRemoveInner={removeInner}
           />
         );
+      case "pdf":
+        return <PDFBlock block={block} onChange={handleChange} />;
       default:
         return <div className="placeholder-block">{block.type.toUpperCase()} BLOCK</div>;
     }
@@ -320,14 +402,15 @@ const EditProfile = () => {
       const form = new FormData();
       form.append("name", formData.name);
       form.append("email", formData.email);
+      form.append("header", formData.header);
       form.append("highlights", JSON.stringify(formData.highlights));
       form.append("pages", JSON.stringify({ pages, activePageId }));
       form.append("blocksList", JSON.stringify(blocksList));
 
-      if (formData.profilePhoto instanceof File) {
-        form.append("profilePhoto", formData.profilePhoto);
-      } else if (typeof formData.profilePhoto === "string") {
-        form.append("profilePhotoUrl", formData.profilePhoto);
+      if (formData.backgroundPhoto instanceof File) {
+        form.append("backgroundPhoto", formData.backgroundPhoto);
+      } else if (typeof formData.backgroundPhoto === "string") {
+        form.append("backgroundPhotoUrl", formData.backgroundPhoto);
       }
 
       const res = await fetch("http://localhost:2000/api/setup", {
@@ -337,8 +420,12 @@ const EditProfile = () => {
       });
 
       const result = await res.json();
-      if (res.ok) alert("Profile saved!");
-      else throw new Error(result.message || "Save failed");
+      if (res.ok) {
+        if (result.user && result.user.backgroundPhoto) {
+          setFormData(prev => ({ ...prev, backgroundPhoto: result.user.backgroundPhoto }));
+        }
+        alert("Profile saved!");
+      } else throw new Error(result.message || "Save failed");
     } catch (err) {
       alert(`Save failed: ${err.message}`);
     }
@@ -403,8 +490,17 @@ const EditProfile = () => {
               View Public Profile
             </Link>
 
-            <Link to="/generate" className="block-option" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
-              Enhance with AI
+            <Link to="/generate" className="block-option enhance-ai-button">
+              <span className="enhance-ai-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21M12 3V21M21 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M19.5 12C19.5 16.1421 16.1421 19.5 12 19.5C7.85786 19.5 4.5 16.1421 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                </svg>
+              </span>
+              <span>Enhance with AI</span>
+              <span className="enhance-ai-glow"></span>
             </Link>
 
 
@@ -415,8 +511,8 @@ const EditProfile = () => {
         <div
           className="profile-header-background"
           style={{
-            backgroundImage: formData.profilePhoto
-              ? `url(${formData.profilePhoto instanceof File ? URL.createObjectURL(formData.profilePhoto) : formData.profilePhoto})`
+            backgroundImage: formData.backgroundPhoto
+              ? `url(${formData.backgroundPhoto instanceof File ? URL.createObjectURL(formData.backgroundPhoto) : formData.backgroundPhoto})`
               : `url('/defaultBackground.jpg')`,
           }}
         >
@@ -424,13 +520,16 @@ const EditProfile = () => {
             <input
               type="file"
               accept="image/*"
-              id="profile-upload"
+              id="background-upload"
               onChange={(e) => {
                 const file = e.target.files[0];
-                if (file) setFormData({ ...formData, profilePhoto: file });
+                if (file) setFormData({ ...formData, backgroundPhoto: file });
               }}
               style={{ display: "none" }}
             />
+            <label htmlFor="background-upload" className="change-background-btn">
+              Change Background
+            </label>
             <div className="profile-text profile-single-line">
               <input
                 className="profile-single-input"

@@ -1,39 +1,92 @@
-.multi-block-column {
+.multi-block-carousel-container {
+  perspective: 1000px;
+  width: 100%;
+  height: auto;
+  min-height: 400px;
+  padding: 40px 0;
+  position: relative;
   display: flex;
-  flex-direction: row; /* Changed from column to row */
-  gap: 15px; /* Increased from 10px for better spacing */
-  padding: 15px; /* Increased from 10px */
-  min-height: 100px;
-  border: 1px dashed rgba(179, 163, 105, 0.3);
-  background-color: rgba(30, 30, 30, 0.4);
-  border-radius: 10px;
-  flex-wrap: wrap; /* Optional: allow wrapping on small screens */
-}
-  
-.multi-inner-block {
-  flex: 1 1 100%;
-  max-width: 100%;
-  transition: all 0.3s ease;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 48px;
 }
 
-.multi-block-column {
-  display: grid;
-  gap: 15px; /* Increased from 10px */
-  padding: 15px; /* Increased from 10px */
-  min-height: 120px;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  background-color: rgba(30, 30, 30, 0.4);
-  border-radius: 10px;
-  transition: background-color 0.2s;
+.multi-block-carousel {
+  width: 100%;
+  height: auto;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 1s ease;
 }
 
-.multi-block-column:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.multi-block-carousel figure {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: auto;
+  min-width: 280px;
+  max-width: 600px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 1s, opacity 0.6s ease;
+  opacity: 0.25;
+  pointer-events: none;
 }
 
-/* Dynamically assign columns based on number of blocks */
-.multi-block-column > .multi-inner-block {
+.multi-block-carousel figure.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.block-wrapper-inside-carousel {
+  width: 100%;
+  height: 100%;
+  min-width: 280px;
+}
+
+.block-wrapper-inside-carousel > * {
   width: 100%;
 }
 
-/* Let JS assign grid-template-columns based on block count */ 
+.carousel-controls {
+  position: absolute;
+  bottom: 10px;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
+  z-index: 5;
+}
+
+.carousel-controls button {
+  background-color: rgba(179, 163, 105, 0.8);
+  border: none;
+  padding: 10px 16px;
+  font-size: 20px;
+  color: #000;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.carousel-controls button:hover {
+  background-color: rgba(255, 215, 0, 0.9);
+  color: #000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .multi-block-carousel-container {
+    min-height: 350px;
+  }
+  
+  .multi-block-carousel figure {
+    max-width: 90%;
+  }
+}

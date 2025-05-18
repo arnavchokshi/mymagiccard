@@ -25,7 +25,8 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String },
   name: { type: String, required: true },
-  profilePhoto: { type: String },
+  backgroundPhoto: { type: String },
+  header: { type: String },
   highlights: [HighlightSchema],
   pages: [PageSchema],
   activePageId: { type: String }

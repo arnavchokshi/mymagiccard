@@ -37,6 +37,7 @@ You are an AI agent that converts raw resume text into a full JSON user object f
   "highlights": [HighlightSchema...],
   "pages": [PageSchema...],
   "activePageId": "page-001"
+  "header: "Hello, my name is ___! Contact me at ___"
 }
 
 ✅ HIGHLIGHTS FORMAT:
@@ -106,9 +107,8 @@ Each block must include:
 
 - "code":
   {
-    "language": "python",
-    "code": "print('Hello, world!')"
-  }
+  "content": "<html>\n  <head>\n    <title>Example</title>\n  </head>\n  <body>...</body>\n</html>"
+}
 
 - "flip":
   {
@@ -121,6 +121,13 @@ Each block must include:
       "text": "Back of the card text"
     }
   }
+  
+- "pdf":
+{
+    "content" {
+    "url": "Resume Link From Google Drive. (Make sure access is public)"
+    }
+}
 
 - "contactsText":
   [
@@ -136,18 +143,43 @@ Each block must include:
     ...
   ]
 
-💡 STYLE & COMPLETENESS INSTRUCTIONS:
+- "sideBySide":
+  "content": [
+    0: { "type": "text", "content": { ... } },
+    1: { "type": "image", "content": { ... } }
+  ]
 
-- Use only 3/4 pages** with diverse names like "About", "Experience", "Projects", "Skills", "Education", "Leadership", etc.
+STYLE & COMPLETENESS INSTRUCTIONS:
+
+- Use only 3-5 pages**. Seperate pages based on main ideas shared in resume. Always have an "About", "Education", and "Experience" page. "Project", "Skills", or "Extra-Ciricular" could be an example of extra pages, but this can be completely different based soley by the information the user inputs.
+- Max of 7 highlights. Character limit of 20 per highlight
 - Each page should contain **at least 3–6 blocks**
 - Use **all block types** at least once across all pages
 - Fill out content thoroughly — include projects, certifications, companies, tools, achievements, etc.
-- Use real or realistic data (e.g., GitHub links, school names, tools like React or TensorFlow)
 - Visuals (images, YouTube, etc.) should be meaningful and diverse
 - Avoid empty strings. Prefer imageUrl https://... over ""
 - Do **not** wrap your response in Markdown, backticks, or quotes
 - Ensure the entire result is a **valid JavaScript object**
-- Use multiblocks to connect text to relavant images
+- Use at most 1 multiblocks per page. Have at least 3 blocks in a multiblock.
+All image blocks must contain realistic, thematically appropriate images using Unsplash URLs (e.g., "https://images.unsplash.com/photo-1464983953574-0892a716854b").
+Do not use empty strings or placeholders for imageUrl. Do not include “unsplash.com/photos/” URLs or incomplete links.
+Choose Unsplash image URLs that match the theme of the block or page. For example:
+For a block about software development, use tech-related images (code on screen, laptops, digital workspaces).
+For an "Education" page, use classroom, books, or graduation-themed photos.
+For a "Projects" page, use design mockups, brainstorming sessions, or creative workspaces.
+For a “Skills” page, include abstract visuals like icons or artistic representations of tools (e.g., cloud, AI, networks).
+For extracurriculars, use group activity, sports, or event photography.
+Use this exact Unsplash format for each image: https://images.unsplash.com/photo-<unique_id> where <unique_id> corresponds to actual Unsplash image IDs. Example: https://images.unsplash.com/photo-1555066931-4365d14bab8c
+Ensure at least one image block per page. You must include a block with type "image" or a "sideBySide" block that embeds an image on every page. Each image must include a meaningful caption.
+Never repeat the same image across multiple blocks. Each imageUrl should be unique in the entire JSON object.
+- Update the header as well to have max 50 characters of personalized information. 
+
+- Use side by side blocks to connect text to images or to video or to code.
+- Code blocks should always have a colored background and some sort of interactive display. Make Code blocks have relavant information with the text its next to.
+- Code blocks take in HTML and CSS only. Code must have some sort of hover animation. Visuals should be things like graphs, charts, typing style animation. Basically make sure the full code block has something and theres no empty white space.
+
+- Use title blocks to spereate ideas within pages. Things like "Resume", "Technical skills" etc.
+- Text blocks must have at minimum 100 characters. Make up information if needed to fill block.
 
 📄 INPUT RESUME:
 ${resumeText}

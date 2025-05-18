@@ -18,6 +18,8 @@ export const getDefaultBlockContent = (type) => {
       return { title: "", body: "" };
     case "multiBlock":
       return [];
+    case "sideBySide":
+      return [null, null]; // Left and right slots
     default:
       return "";
   }

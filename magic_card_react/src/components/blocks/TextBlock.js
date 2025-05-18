@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import "./TextBlock.css";
 
 const TextBlock = ({ block, onChange, readOnly }) => {
@@ -6,11 +6,28 @@ const TextBlock = ({ block, onChange, readOnly }) => {
     ? block.content
     : { title: "", body: block.content || "" };
 
+  const titleRef = useRef(null);
+  const bodyRef = useRef(null);
+
   const updateField = (field, value) => {
     if (readOnly) return;
     const updated = { ...textMeta, [field]: value };
     onChange?.(updated);
   };
+
+  const autoResize = (el) => {
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    if (!readOnly) {
+      autoResize(titleRef.current);
+      autoResize(bodyRef.current);
+    }
+  }, [textMeta.title, textMeta.body, readOnly]);
 
   if (readOnly) {
     return (
@@ -26,18 +43,31 @@ const TextBlock = ({ block, onChange, readOnly }) => {
   }
 
   return (
-    <div className="text-block-wrapper">
+    <div className="text-block-wrapper auto-expanding">
       <textarea
+        ref={titleRef}
         className="block-title"
         placeholder="Section Title (optional)"
         value={textMeta.title}
-        onChange={(e) => updateField("title", e.target.value)}
+        onChange={(e) => {
+          updateField("title", e.target.value);
+          autoResize(e.target);
+        }}
+        rows={1}
       />
+
+      <hr className="divider-line-gold" />
+
       <textarea
+        ref={bodyRef}
         className="block-textarea"
         placeholder="Write your main text here..."
         value={textMeta.body}
-        onChange={(e) => updateField("body", e.target.value)}
+        onChange={(e) => {
+          updateField("body", e.target.value);
+          autoResize(e.target);
+        }}
+        rows={1}
       />
     </div>
   );
