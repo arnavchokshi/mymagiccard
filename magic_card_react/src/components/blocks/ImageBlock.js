@@ -32,20 +32,24 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
         });
   
         const data = await res.json();
-        if (res.ok) {
+        console.log("Upload response:", data); // Debug log
+        
+        if (res.ok && data.url) {
           uploadedImages.push({ url: data.url, caption: '' });
         } else {
           throw new Error(data.message || "Failed to upload image");
         }
       } catch (err) {
-        setError("Failed to upload one or more images. Please try again.");
         console.error("Image upload error:", err);
+        setError("Failed to upload one or more images. Please try again.");
       }
     }
   
     if (uploadedImages.length > 0) {
       const newImages = [...images, ...uploadedImages];
+      console.log("Updating images:", newImages); // Debug log
       onChange(newImages);
+      setCurrentIndex(newImages.length - 1); // Show the newly uploaded image
     }
     setIsLoading(false);
   };
@@ -89,6 +93,7 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
               alt={images[currentIndex].caption || `Slide ${currentIndex + 1}`}
               className="carousel-image"
               onError={(e) => {
+                console.error("Image load error:", e.target.src); // Debug log
                 e.target.src = '/placeholder-image.jpg';
                 e.target.classList.add('image-error');
               }}
@@ -99,7 +104,7 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
               ) : (
                 <input
                   type="text"
-                  value={images[currentIndex].caption}
+                  value={images[currentIndex].caption || ''}
                   onChange={handleCaptionChange}
                   placeholder="Add a caption..."
                   className="caption-input"
@@ -156,6 +161,11 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
             {error}
           </div>
         )}
+
+        {/* Debug info - remove in production */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', color: 'white', padding: '5px', fontSize: '10px' }}>
+          Images: {images.length} | Current: {currentIndex} | URL: {images[currentIndex]?.url || 'none'}
+        </div>
       </div>
       
       {/* Image counter */}
