@@ -95,6 +95,10 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
   const handleCaptionChange = (e) => {
     if (!images[currentIndex]) return;
 
+    // Auto-resize the input
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+
     if (Array.isArray(block.content)) {
       const newImages = [...images];
       newImages[currentIndex] = {
@@ -103,7 +107,6 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
       };
       onChange(newImages);
     } else {
-      // Handle single image format
       onChange({
         imageUrl: images[currentIndex].url,
         caption: e.target.value
@@ -114,15 +117,30 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
   const handleDeleteImage = () => {
     if (images.length === 0) return;
     
+    // Always convert to array format for consistency
+    const newImages = images.filter((_, index) => index !== currentIndex);
+    
+    // Update the state based on the original content format
     if (Array.isArray(block.content)) {
-      const newImages = images.filter((_, index) => index !== currentIndex);
       onChange(newImages);
-      if (currentIndex >= newImages.length) {
-        setCurrentIndex(Math.max(newImages.length - 1, 0));
+    } else if (block.content && typeof block.content === 'object') {
+      // If it was originally a single image object format
+      if (newImages.length > 0) {
+        onChange({
+          imageUrl: newImages[0].url,
+          caption: newImages[0].caption || ''
+        });
+      } else {
+        onChange({ imageUrl: '', caption: '' });
       }
     } else {
-      // For single image format, clear the content
-      onChange({ imageUrl: '', caption: '' });
+      // Default to array format if format is unknown
+      onChange(newImages);
+    }
+    
+    // Update current index
+    if (currentIndex >= newImages.length) {
+      setCurrentIndex(Math.max(newImages.length - 1, 0));
     }
   };
 

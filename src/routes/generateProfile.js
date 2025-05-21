@@ -102,6 +102,7 @@ When generating a "code" block:
 The content field must be a single properly escaped string.
 Do not wrap code in an object like { language, code }.
 Escape all inner double quotes and preserve line breaks as \n.
+Code can only be in strictly html and css.
 The structure should look like:
 
 - "code":
@@ -152,11 +153,12 @@ The structure should look like:
   ]
 
 STYLE & COMPLETENESS INSTRUCTIONS:
+ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
 1. PAGE STRUCTURE:
    - About Page (Required):
      • Title block: Professional introduction
-     • Image block: Profile photo placeholder
+     • Image block: Profile photo placeholder. Look up the user with their name and email and use the image from their linkedin profile or other social media.
      • Text block: Bio (min 200 characters)
      • PDF block: Resume
      • ContactsText block: All professional links

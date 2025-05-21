@@ -177,57 +177,45 @@
   position: absolute;
   bottom: 20px;
   right: 20px;
-  max-width: 50%;
-  background: rgba(0, 0, 0, 0.6);
+  min-width: 200px;
+  max-width: 400px;
+  background: rgba(0, 0, 0, 0.75);
   padding: 12px 20px;
   color: white;
   text-align: right;
   border-radius: 8px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.caption-text {
-  margin: 0;
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--primary-neon, #b3a369);
-  text-shadow: 
-    0 0 1px rgba(179, 163, 105, 0.3),
-    0 0 4px rgba(179, 163, 105, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(179, 163, 105, 0.3);
 }
 
 .caption-input {
   width: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: transparent;
   border: none;
-  border-radius: 6px;
   color: var(--primary-neon, #b3a369);
-  padding: 10px 15px;
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 4px 8px;
   text-align: right;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: all 0.3s ease;
-}
-
-.caption-input:focus {
   outline: none;
-  background: rgba(0, 0, 0, 0.6);
-  box-shadow: 
-    0 0 0 1px rgba(179, 163, 105, 0.3),
-    0 0 8px rgba(179, 163, 105, 0.2);
+  resize: both; /* Allow both horizontal and vertical resizing */
+  min-height: 24px;
+  overflow: hidden; /* Hide scrollbars */
 }
 
 .caption-input::placeholder {
-  color: rgba(179, 163, 105, 0.5);
-  font-style: italic;
+  color: rgba(179, 163, 105, 0.6);
+}
+
+.caption-text {
+  margin: 0;
   font-family: 'Inter', sans-serif;
-  letter-spacing: 0;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--primary-neon, #b3a369);
 }
 
 /* Arrows less prominent */
@@ -298,49 +286,30 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .carousel-image {
-    max-height: 400px;
-  }
-  
   .image-caption {
+    max-width: 300px;
+    padding: 10px 16px;
     bottom: 15px;
     right: 15px;
-    padding: 10px 15px;
   }
   
-  .caption-text,
-  .caption-input {
-    font-size: 16px;
-  }
-  
-  .upload-label {
-    bottom: 15px;
+  .caption-input,
+  .caption-text {
     font-size: 14px;
-    padding: 10px 20px;
   }
 }
 
 @media (max-width: 480px) {
-  .carousel-image {
-    max-height: 300px;
-  }
-  
   .image-caption {
-    bottom: 12px;
-    right: 12px;
+    max-width: 250px;
     padding: 8px 12px;
-    max-width: 60%;
+    bottom: 10px;
+    right: 10px;
   }
   
-  .caption-text,
-  .caption-input {
-    font-size: 14px;
-  }
-  
-  .upload-label {
-    bottom: 12px;
+  .caption-input,
+  .caption-text {
     font-size: 13px;
-    padding: 8px 16px;
   }
 }
 
