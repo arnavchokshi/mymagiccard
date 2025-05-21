@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { API_URLS } from "../../config";
 
 // Blocks (read-only versions)
 import TextBlock from "../../components/blocks/TextBlock";
@@ -118,7 +119,7 @@ const UserPage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:2000/api/public/${id}`);
+        const res = await fetch(API_URLS.public(id));
         const data = await res.json();
 
         setUserData({

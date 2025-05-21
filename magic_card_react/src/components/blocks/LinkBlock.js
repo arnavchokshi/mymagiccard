@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../EditProfile/EditProfile.css";
 import "./LinkBlock.css";
+import { API_URLS } from "../../config";
 
 const LinkBlock = ({ block, onChange, readOnly }) => {
   const [preview, setPreview] = useState(null);
@@ -18,7 +19,7 @@ const LinkBlock = ({ block, onChange, readOnly }) => {
 
     const delay = setTimeout(() => {
       setLoading(true);
-      fetch(`http://localhost:2000/api/link-preview?url=${encodeURIComponent(content.url)}`)
+      fetch(API_URLS.linkPreview + `?url=${encodeURIComponent(content.url)}`)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch link preview");
           return res.json();

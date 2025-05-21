@@ -2,6 +2,18 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require("cors");
+const fs = require('fs');
+const path = require('path');
+
+// Define uploads directory based on environment
+const uploadsDir = process.env.NODE_ENV === 'production'
+  ? '/opt/render/project/src/uploads'  // Render.com persistent disk path
+  : path.join(__dirname, 'uploads'); // Local development path
+
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 const signupRoute = require('./routes/signup');
 const loginRoute = require('./routes/login');
@@ -48,8 +60,8 @@ app.use('/user', signupRoute);    // e.g. /user/register
 app.use('/auth', loginRoute);     // e.g. /auth/login
 app.use('/api', userRoute);       // includes /api/public/:id, /api/setup, etc.
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static('uploads'));
+// Configure static file serving for uploads
+app.use('/uploads', express.static(uploadsDir));
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {

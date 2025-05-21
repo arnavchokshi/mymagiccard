@@ -1,22 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const ModelClient = require("@azure-rest/ai-inference").default;
-const { isUnexpected } = require("@azure-rest/ai-inference");
-const { AzureKeyCredential } = require("@azure/core-auth");
-const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const { authenticateToken } = require("../utils/authMiddleware");
 const mongoose = require("mongoose");
 
-const endpoint = "https://models.github.ai/inference";
-const model = "openai/gpt-4.1";
-const token = process.env.AZURE_GITHUB_KEY;
-
-if (!token) {
-  console.warn("⚠️ Missing AZURE_GITHUB_KEY in environment variables");
-}
-
-const client = ModelClient(endpoint, new AzureKeyCredential(token));
+const GITHUB_API_URL = "https://models.github.ai/inference";
+const MODEL = "openai/gpt-4.1";
 
 router.post("/generate-profile", authenticateToken, async (req, res) => {
   const { resumeText } = req.body;
@@ -101,14 +90,19 @@ Each block must include:
 
 - "image":
   {
-    "imageUrl": "", Leave blank
-    "caption": "Short caption"
+    "content": [
+      {
+        "url": "https://images.unsplash.com/photo-xxxx",
+        "caption": "Short caption"
+      }
+    ]
   }
 
 When generating a "code" block:
 The content field must be a single properly escaped string.
 Do not wrap code in an object like { language, code }.
 Escape all inner double quotes and preserve line breaks as \n.
+Code can only be in strictly html and css.
 The structure should look like:
 
 - "code":
@@ -159,106 +153,145 @@ The structure should look like:
   ]
 
 STYLE & COMPLETENESS INSTRUCTIONS:
+ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
-- Use only 3-4 pages**. 
-Unless otherwise specified, have an about page. This page should have user bio, pdf blokc for resume, profile photo, and contact information. 
-Have an education page. This page should have user education history using flip blocks.
-Have a projects page. This page should represent all projects with a sidebyside block. One text and one image.
-Have an extra-curricular page. This page should be split into two sections for skills and clubs.
-Have a professional experience page. This page should have user professional experience using side by side blocks. 
-- Max of 4 highlights. Character limit of 20 per highlight
-- Each page should contain **at least 3–6 blocks**
-- Use **all block types** at least once across all pages
-- Fill out content thoroughly — include projects, certifications, companies, tools, achievements, etc.
-- Visuals (images, YouTube, etc.) should be meaningful and diverse
-- Avoid empty strings. Prefer imageUrl https://... over ""
-- Do **not** wrap your response in Markdown, backticks, or quotes
-- Ensure the entire result is a **valid JavaScript object**
-- Use at most 1 multiblocks per page. Have at least 3 blocks in a multiblock.
-All image blocks must contain realistic, thematically appropriate images using Unsplash URLs (e.g., "https://images.unsplash.com/photo-1464983953574-0892a716854b").
-Do not use empty strings or placeholders for imageUrl. Do not include “unsplash.com/photos/” URLs or incomplete links.
-Choose Unsplash image URLs that match the theme of the block or page. For example:
-For a block about software development, use tech-related images (code on screen, laptops, digital workspaces).
-For an "Education" page, use classroom, books, or graduation-themed photos.
-For a "Projects" page, use design mockups, brainstorming sessions, or creative workspaces.
-For a “Skills” page, include abstract visuals like icons or artistic representations of tools (e.g., cloud, AI, networks).
-For extracurriculars, use group activity, sports, or event photography.
-- Use side by side blocks to connect text to images or to video or to code.
-- Code blocks should always have a colored background and some sort of interactive display. Make Code blocks have relavant information with the text its next to.
-- Code blocks take in HTML and CSS only. Code must have some sort conplex motion of hover animation.
+1. PAGE STRUCTURE:
+   - About Page (Required):
+     • Title block: Professional introduction
+     • Image block: Profile photo placeholder. Look up the user with their name and email and use the image from their linkedin profile or other social media.
+     • Text block: Bio (min 200 characters)
+     • PDF block: Resume
+     • ContactsText block: All professional links
+     • MultiBlock: Skills overview with categories
 
-- Use title blocks to spereate ideas within pages. Things like "Resume", "Technical skills" etc.
-- Text blocks must have at minimum 100 characters. Make up information if needed to fill block.
+   - Education Page:
+     • Title block: "Educational Journey"
+     • Flip blocks for each education milestone:
+       - Front: Institution logo, degree name, years
+       - Back: Key achievements, courses, projects
+     • Code block: Showcase relevant academic projects
 
-📄 INPUT RESUME:
+   - Projects Page:
+     • Title block: "Featured Projects"
+     • SideBySide blocks for each project:
+       - Left: Technical details, outcomes, technologies
+       - Right: Project visual or demo
+     • Code blocks: Show complex animations or interactive elements
+
+   - Professional Experience:
+     • Title block: "Work Experience"
+     • SideBySide blocks for each role:
+       - Left: Role details, achievements, metrics
+       - Right: Company-related visuals
+     • MultiBlock: Skills and technologies used
+
+2. CODE BLOCK GUIDELINES:
+   - Each code block should demonstrate one of these animations:
+     a) 3D card flip with gradient borders
+     b) Floating elements with particle effects
+     c) Progressive reveal with scroll animations
+     d) Interactive hover states with glowing effects
+     e) Morphing shapes with SVG animations
+   - Include comments explaining the animation
+   - Use CSS variables for easy customization
+   - Implement smooth transitions (0.3s - 0.6s)
+   - Add subtle shadows and gradient effects
+   - Include hover, focus, and active states
+
+3. CONTENT QUALITY:
+   - All text blocks: Minimum 150 characters
+   - Use bullet points for better readability
+   - Include metrics and specific examples
+   - Maintain professional tone
+   - Break long content into paragraphs
+   - Use active voice and action verbs
+
+4. VISUAL HIERARCHY:
+   - Start each page with a title block
+   - Group related blocks using multiBlock
+   - Alternate between different block types
+   - Use sideBySide for visual content
+   - Ensure logical content flow
+
+resume:
 ${resumeText}
 `;
 
+    const response = await fetch(GITHUB_API_URL + "/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          {
+            role: "system",
+            content: "You convert resumes into structured JSON for web profiles."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.6
+      })
+    });
 
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("❌ GitHub API Error:", error);
+      throw new Error(error.message || "Failed to generate profile");
+    }
 
-console.log("🧠 Sending prompt to GPT...");
-console.log("🔍 req.user payload from token:", req.user);
+    const data = await response.json();
+    const rawJson = data.choices?.[0]?.message?.content;
+    console.log("📝 Raw GPT output:\n", rawJson);
 
+    let parsed;
+    try {
+      parsed = JSON.parse(rawJson);
+    } catch (err) {
+      console.error("❌ Failed to parse JSON:", rawJson);
+      return res.status(500).json({ message: "Invalid output format", raw: rawJson });
+    }
 
-const response = await client.path("/chat/completions").post({
-  body: {
-    messages: [
-      { role: "system", content: "You convert resumes into structured JSON for web profiles." },
-      { role: "user", content: prompt }
-    ],
-    temperature: 0.6,
-    model
+    if (!Array.isArray(parsed.pages)) {
+      return res.status(400).json({ message: "Parsed response missing 'pages'", parsed });
+    }
+
+    const update = {
+      highlights: parsed.highlights || [],
+      pages: parsed.pages,
+      activePageId: parsed.activePageId || parsed.pages[0]?.id || "main"
+    };
+
+    const user = await User.findByIdAndUpdate(
+      new mongoose.Types.ObjectId(req.user._id),
+      { $set: update },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found for update" });
+    }
+
+    console.log("✅ Updated existing user:", user._id);
+
+    res.status(200).json({
+      message: "Profile updated successfully!",
+      userId: user._id,
+      previewUrl: `http://localhost:3000/user/${user._id}/edit`
+    });
+
+  } catch (err) {
+    console.error("❌ Error during profile generation:", err);
+    res.status(500).json({ 
+      message: "Failed to generate profile",
+      error: err.message || "Unknown error"
+    });
   }
-});
-
-if (isUnexpected(response)) {
-  console.error("❌ Unexpected response from Azure API:", response.body);
-  throw response.body.error;
-}
-
-const rawJson = response.body.choices?.[0]?.message?.content;
-console.log("📝 Raw GPT output:\n", rawJson);
-
-let parsed;
-try {
-  parsed = JSON.parse(rawJson);
-} catch (err) {
-  console.error("❌ Failed to parse JSON:", rawJson);
-  return res.status(500).json({ message: "Invalid GPT output format", raw: rawJson });
-}
-
-if (!Array.isArray(parsed.pages)) {
-  return res.status(400).json({ message: "Parsed response missing 'pages'", parsed });
-}
-
-const update = {
-  highlights: parsed.highlights || [],
-  pages: parsed.pages,
-  activePageId: parsed.activePageId || parsed.pages[0]?.id || "main"
-};
-
-const user = await User.findByIdAndUpdate(
-    new mongoose.Types.ObjectId(req.user._id),
-  { $set: update },
-  { new: true }
-);
-
-if (!user) {
-  return res.status(404).json({ message: "User not found for update" });
-}
-
-console.log("✅ Updated existing user:", user._id);
-
-res.status(200).json({
-  message: "Profile updated successfully!",
-  userId: user._id,
-  previewUrl: `http://localhost:3000/user/${user._id}/edit`
-});
-
-} catch (err) {
-console.error("❌ Error during profile generation:", err);
-res.status(500).json({ message: "Internal server error", error: err.message || err });
-}
 });
 
 module.exports = router;

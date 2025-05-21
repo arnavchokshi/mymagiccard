@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "./ResumeToProfile.css";
+import { API_URLS } from "../../config";
 
 function ResumeToProfile() {
   const [resumeText, setResumeText] = useState("");
@@ -62,7 +63,7 @@ function ResumeToProfile() {
         });
       }, 3000);
       
-      const response = await fetch("http://localhost:2000/api/generate-profile", {
+      const response = await fetch(API_URLS.generateProfile, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
