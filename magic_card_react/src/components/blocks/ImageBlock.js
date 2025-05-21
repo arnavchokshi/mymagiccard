@@ -1,4 +1,3 @@
-// ImageBlock.js
 import React, { useState } from "react";
 import "./ImageBlock.css";
 
@@ -9,10 +8,14 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
     ? content.map(item => typeof item === 'string' ? { url: item, caption: '' } : item)
     : [];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     const uploadedImages = [];
+    setIsLoading(true);
+    setError(null);
   
     for (const file of files) {
       const form = new FormData();
@@ -20,7 +23,7 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
   
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:2000/api/image", {
+        const res = await fetch("https://mymagiccard.onrender.com/api/image", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -32,9 +35,10 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
         if (res.ok) {
           uploadedImages.push({ url: data.url, caption: '' });
         } else {
-          console.error("Upload failed:", data.message);
+          throw new Error(data.message || "Failed to upload image");
         }
       } catch (err) {
+        setError("Failed to upload one or more images. Please try again.");
         console.error("Image upload error:", err);
       }
     }
@@ -43,6 +47,7 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
       const newImages = [...images, ...uploadedImages];
       onChange(newImages);
     }
+    setIsLoading(false);
   };
 
   const handleCaptionChange = (e) => {
@@ -62,6 +67,18 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
+  const handleDeleteImage = () => {
+    if (images.length === 0) return;
+    
+    const newImages = images.filter((_, index) => index !== currentIndex);
+    onChange(newImages);
+    
+    // Adjust current index if necessary
+    if (currentIndex >= newImages.length) {
+      setCurrentIndex(Math.max(newImages.length - 1, 0));
+    }
+  };
+
   return (
     <div className="image-block-wrapper">
       <div className="carousel">
@@ -71,6 +88,10 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
               src={images[currentIndex].url}
               alt={images[currentIndex].caption || `Slide ${currentIndex + 1}`}
               className="carousel-image"
+              onError={(e) => {
+                e.target.src = '/placeholder-image.jpg';
+                e.target.classList.add('image-error');
+              }}
             />
             <div className="image-caption">
               {readOnly ? (
@@ -90,25 +111,59 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
           <p className="no-image">No image uploaded</p>
         )}
 
-        {/* Arrows inside carousel for subtle positioning */}
-        <div className="carousel-controls">
-          <button onClick={handlePrev}>&lt;</button>
-          <button onClick={handleNext}>&gt;</button>
-        </div>
+        {/* Navigation controls */}
+        {images.length > 1 && (
+          <div className="carousel-nav-controls">
+            <button onClick={handlePrev} className="nav-button">&lt;</button>
+            <button onClick={handleNext} className="nav-button">&gt;</button>
+          </div>
+        )}
 
+        {/* Separated upload and delete controls */}
         {!readOnly && (
-          <label className="upload-label">
-            Upload
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              style={{ display: "none" }}
-            />
-          </label>
+          <div className="bottom-controls">
+            <label className="upload-button">
+              <span>Upload Image</span>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={isLoading}
+                style={{ display: "none" }}
+              />
+            </label>
+            {images.length > 0 && (
+              <button 
+                onClick={handleDeleteImage}
+                className="delete-button"
+                title="Delete current image"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Loading and error states */}
+        {isLoading && (
+          <div className="loading-overlay">
+            <span>Uploading images...</span>
+          </div>
+        )}
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
         )}
       </div>
+      
+      {/* Image counter */}
+      {images.length > 0 && (
+        <div className="image-counter">
+          {currentIndex + 1} / {images.length}
+        </div>
+      )}
     </div>
   );
 };

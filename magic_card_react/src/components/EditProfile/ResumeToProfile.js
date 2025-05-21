@@ -62,7 +62,7 @@ function ResumeToProfile() {
         });
       }, 3000);
       
-      const response = await fetch("http://localhost:2000/api/generate-profile", {
+      const response = await fetch("https://mymagiccard.onrender.com/api/generate-profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

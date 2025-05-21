@@ -96,7 +96,7 @@ const EditProfile = () => {
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          const res = await fetch("http://localhost:2000/api/me", {
+          const res = await fetch("https://mymagiccard.onrender.com/api/me", {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {
@@ -116,7 +116,7 @@ const EditProfile = () => {
           }
         }
         // fallback to public fetch if no token or /api/me fails
-        const res = await fetch(`http://localhost:2000/api/public/${id}`);
+        const res = await fetch(`https://mymagiccard.onrender.com/public/${id}`);
         const data = await res.json();
         setFormData({
           name: data.name || "",
@@ -421,7 +421,7 @@ const EditProfile = () => {
         form.append("backgroundPhotoUrl", formData.backgroundPhoto);
       }
 
-      const res = await fetch("http://localhost:2000/api/setup", {
+      const res = await fetch("https://mymagiccard.onrender.com/api/setup", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: form

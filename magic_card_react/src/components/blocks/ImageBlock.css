@@ -6,14 +6,16 @@
     margin-bottom: 30px;
     text-align: center;
     color: white;
+    position: relative;
+    z-index: 1;
   }
   
   .carousel {
     position: relative;
-    max-width: 100%;
+    width: 100%;
+    min-height: 300px;
     overflow: hidden;
-    border-radius: 10px;
-    margin-bottom: 15px;
+    border-radius: 16px;
     background-color: rgba(0, 0, 0, 0.5);
   }
   
@@ -78,6 +80,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    z-index: 5;
   }
   
   .upload-label:hover {
@@ -273,7 +276,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 2;
+  z-index: 10;
   backdrop-filter: blur(4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   font-weight: 500;
@@ -338,5 +341,203 @@
     bottom: 12px;
     font-size: 13px;
     padding: 8px 16px;
+  }
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  z-index: 10;
+}
+
+.error-message {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 10;
+}
+
+.image-actions {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 5;
+}
+
+.delete-button {
+  background-color: rgba(220, 53, 69, 0.8);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.delete-button:hover {
+  background-color: rgba(220, 53, 69, 0.9);
+}
+
+.image-counter {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 5;
+}
+
+.image-error {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .image-actions {
+    bottom: 15px;
+  }
+  
+  .delete-button {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  .image-counter {
+    top: 10px;
+    right: 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-actions {
+    bottom: 10px;
+  }
+  
+  .delete-button {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Separate navigation controls from bottom controls */
+.carousel-nav-controls {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.nav-button {
+  pointer-events: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Bottom controls styling */
+.bottom-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.upload-button {
+  background-color: rgba(179, 163, 105, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  text-align: center;
+  border: none;
+  pointer-events: auto;
+}
+
+.upload-button:hover {
+  background-color: rgba(179, 163, 105, 0.9);
+  transform: translateY(-2px);
+}
+
+.delete-button {
+  background-color: rgba(220, 53, 69, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border: none;
+  pointer-events: auto;
+}
+
+.delete-button:hover {
+  background-color: rgba(220, 53, 69, 0.9);
+  transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bottom-controls {
+    bottom: 15px;
+  }
+  
+  .upload-button,
+  .delete-button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottom-controls {
+    bottom: 10px;
+  }
+  
+  .upload-button,
+  .delete-button {
+    padding: 7px 14px;
+    font-size: 12px;
   }
 }

@@ -18,7 +18,7 @@ const LinkBlock = ({ block, onChange, readOnly }) => {
 
     const delay = setTimeout(() => {
       setLoading(true);
-      fetch(`http://localhost:2000/api/link-preview?url=${encodeURIComponent(content.url)}`)
+      fetch(`https://mymagiccard.onrender.com/api/link-preview?url=${encodeURIComponent(content.url)}`)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch link preview");
           return res.json();

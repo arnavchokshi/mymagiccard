@@ -118,7 +118,7 @@ const UserPage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:2000/api/public/${id}`);
+        const res = await fetch(`https://mymagiccard.onrender.com/api/public/${id}`);
         const data = await res.json();
 
         setUserData({

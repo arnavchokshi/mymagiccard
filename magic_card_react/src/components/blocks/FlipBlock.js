@@ -47,7 +47,7 @@ const FlipBlock = ({ block, onChange, readOnly }) => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:2000/api/image", {
+      const res = await fetch("https://mymagiccard.onrender.com/api/image", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
