@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./ImageBlock.css";
+import { API_URLS } from "../../config";
 
 const ImageBlock = ({ block, onChange, readOnly }) => {
   // Normalize the content structure
@@ -47,7 +48,7 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
   
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("https://mymagiccard.onrender.com/api/image", {
+        const res = await fetch(API_URLS.image, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

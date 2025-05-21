@@ -1,6 +1,7 @@
 // FlipBlock.js
 import React, { useState } from "react";
 import "./FlipBlock.css";
+import { API_URLS } from "../../config";
 
 const DEFAULT_IMAGE = "/defaultBackground.jpg";
 
@@ -47,7 +48,7 @@ const FlipBlock = ({ block, onChange, readOnly }) => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("https://mymagiccard.onrender.com/api/image", {
+      const res = await fetch(API_URLS.image, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`

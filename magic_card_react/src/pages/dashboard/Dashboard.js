@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { API_URLS } from '../../config';
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -22,7 +23,7 @@ const Dashboard = () => {
         }
         
         console.log("Making request to API");
-        const response = await fetch("http://192.168.86.40:2000/api/users", {
+        const response = await fetch(API_URLS.users, {
           headers: {
             Authorization: `Bearer ${token}`
           }

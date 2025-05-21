@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { API_URLS } from "../../config";
 
 
 // Blocks
@@ -96,7 +97,7 @@ const EditProfile = () => {
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          const res = await fetch("https://mymagiccard.onrender.com/api/me", {
+          const res = await fetch(API_URLS.profile, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {
@@ -116,7 +117,7 @@ const EditProfile = () => {
           }
         }
         // fallback to public fetch if no token or /api/me fails
-        const res = await fetch(`https://mymagiccard.onrender.com/public/${id}`);
+        const res = await fetch(API_URLS.public(id));
         const data = await res.json();
         setFormData({
           name: data.name || "",
@@ -421,7 +422,7 @@ const EditProfile = () => {
         form.append("backgroundPhotoUrl", formData.backgroundPhoto);
       }
 
-      const res = await fetch("https://mymagiccard.onrender.com/api/setup", {
+      const res = await fetch(API_URLS.setup, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: form
