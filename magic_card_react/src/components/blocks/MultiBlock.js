@@ -26,11 +26,15 @@ const MultiBlock = ({
         style={{ transform: `rotateY(-${(360 / itemCount) * activeIndex}deg)` }}
       >
         {children.map((child, i) => {
-          const zDistance = Math.max(200, 80 + itemCount * 40);
+          const zDistance = 320;
           return (
             <figure
               key={child.id || i}
-              style={{ transform: `rotateY(${(360 / itemCount) * i}deg) translateZ(${zDistance}px)` }}
+              style={{
+                top: '50%',
+                position: 'absolute',
+                transform: `rotateY(${(360 / itemCount) * i}deg) translateZ(${zDistance}px) translateY(-50%)`
+              }}
               className={i === activeIndex ? "active" : ""}
             >
               <div className="block-wrapper-inside-carousel">

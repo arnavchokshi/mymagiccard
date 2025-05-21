@@ -1,6 +1,7 @@
 .side-by-side-block {
   width: 100%;
   margin-bottom: 20px;
+  /* border: none; */
 }
 
 .side-by-side-container {
@@ -14,7 +15,7 @@
   min-height: 100px;
   border-radius: 12px;
   background-color: rgba(30, 30, 30, 0.4);
-  border: 1px solid rgba(179, 163, 105, 0.2);
+  /* border: none; */
   transition: all 0.3s ease;
   padding: 15px;
 }
@@ -50,9 +51,20 @@
 @media (max-width: 768px) {
   .side-by-side-container {
     flex-direction: column;
+    gap: 15px; /* Reduced gap for mobile */
   }
   
   .side-block {
     width: 100%;
+    padding: 10px; /* Reduced padding for mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .side-by-side-container {
+    gap: 10px; /* Further reduced gap for smaller screens */
+  }
+  .side-block {
+    padding: 8px; /* Further reduced padding */
   }
 } 

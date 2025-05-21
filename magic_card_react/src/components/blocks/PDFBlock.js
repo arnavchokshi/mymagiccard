@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import "./PDFBlock.css"; // Import the new CSS file
 
 const getGoogleDriveEmbedUrl = (url) => {
   // Convert a Google Drive share link to an embeddable link
@@ -38,8 +39,17 @@ const PDFBlock = ({ block, onChange, readOnly }) => {
     embedUrl = content.fileUrl;
   }
 
+  // Determine iframe height based on screen size for responsiveness
+  // This is a simple approach; more sophisticated methods exist (e.g., ResizeObserver)
+  let iframeHeight = "900px"; // Default
+  if (window.innerWidth <= 480) {
+    iframeHeight = "450px";
+  } else if (window.innerWidth <= 768) {
+    iframeHeight = "600px";
+  }
+
   return (
-    <div className="pdf-block-wrapper" style={{ width: "100%", maxWidth: 700, margin: "0 auto", padding: 16, background: "rgba(30,30,30,0.7)", borderRadius: 12 }}>
+    <div className="pdf-block-wrapper">
       {!readOnly && (
         <>
           <input
@@ -48,7 +58,6 @@ const PDFBlock = ({ block, onChange, readOnly }) => {
             placeholder="Paste Google Drive PDF link or direct PDF URL..."
             value={content.url || ""}
             onChange={handleUrlChange}
-            style={{ width: "100%", padding: 10, marginBottom: 10, borderRadius: 6, border: "1px solid #b3a369" }}
           />
         </>
       )}
@@ -57,14 +66,14 @@ const PDFBlock = ({ block, onChange, readOnly }) => {
           <iframe
             src={embedUrl + (embedUrl.includes('?') ? '&' : '?') + 'page=1'}
             title="PDF Preview"
+            className="pdf-iframe"
             width="100%"
-            height="900px"
-            style={{ border: "1px solid #b3a369", borderRadius: 8, background: "#fff", display: 'block' }}
+            height={iframeHeight}
             allow="autoplay"
           ></iframe>
         </>
       ) : (
-        <div style={{ color: "#b3a369", textAlign: "center", padding: 20 }}>
+        <div className="pdf-block-placeholder">
           No PDF selected. Paste a Google Drive link or direct PDF URL.
         </div>
       )}

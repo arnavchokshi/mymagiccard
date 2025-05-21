@@ -110,7 +110,6 @@ const CodeBlock = ({ content, onChange, readOnly }) => {
   if (readOnly) {
     return (
       <div className="code-block-container readonly">
-        <pre className="code-block-readonly">{code || ""}</pre>
         {code && (
           <iframe
             title="Live Preview"

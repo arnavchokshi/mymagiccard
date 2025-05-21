@@ -14,49 +14,98 @@
 
 /* Header with typing animation */
 .user-page-header {
-    position: fixed;
-    top: 50vh; /* adjust this as needed */
-    left: 0;
-    width: 100%;
-    z-index: 2;
-    height: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background: transparent;
-    pointer-events: none; /* allows clicks to pass through */
-    z-index: -1;
-  }
-  
-  
-.user-header-text-center {
-  text-align: center;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
+  height: 100vh;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.user-header-text-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.user-header-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background: linear-gradient(90deg, #b3a369, #6e4c1b, #b3a369 80%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-swipe 3.5s linear infinite;
+  margin: 0 0 18px 0;
+  line-height: 1.1;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 20px 30px;
+  display: inline-block;
 }
 
 .user-header-typing {
+  font-family: 'Playfair Display', serif;
   font-size: 1.8rem;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--primary-neon, #b3a369);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 20px 30px;
+  display: inline-block;
+  margin: 0 auto;
   white-space: nowrap;
   overflow: hidden;
-  border-right: 2px solid transparent;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  color: #fff;
-  margin: 0 auto;
-  display: inline-block; /* Makes the element respect text width */
+  border-right: 3px solid var(--primary-neon, #b3a369);
+  max-width: 90%;
+  pointer-events: none;
 }
 
-/* Typing animation */
+@keyframes gradient-swipe {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 @keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
+  from { width: 0; }
+  to { width: var(--text-width, 100%); }
 }
 
 @keyframes blink-caret {
-  from, to { border-color: transparent }
-  50% { border-color: rgba(255, 255, 255, 0.75) }
+  from, to { border-color: transparent; }
+  50% { border-color: var(--primary-neon, #b3a369); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-header-name {
+    font-size: 2.4rem;
+    padding: 15px 25px;
+  }
+  .user-header-typing {
+    font-size: 1.4rem;
+    padding: 15px 25px;
+  }
 }
 
 /* Main content area */
@@ -64,7 +113,7 @@
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  background-color: rgba(10, 10, 15, 0.75);
+  background-color: rgba(10, 10, 15, 0.443);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 30px;
@@ -130,13 +179,14 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
+  overflow: visible;
 }
 
 .user-block-item {
   position: relative;
   transition: all 0.3s ease;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Block styles */
@@ -503,34 +553,103 @@
     margin-top: 87vh; /* adjust this value as needed */
   }
 
-/* Side by side block styles */
-.user-side-by-side-block-wrapper {
-  margin: 20px 0;
-  width: 100%;
-}
-
-.user-side-by-side-block-wrapper .side-by-side-block {
-  margin-bottom: 0;
-}
-
-.user-side-by-side-block-wrapper .side-by-side-container {
-  display: flex;
-  gap: 30px;
-  width: 100%;
-}
-
-.user-side-by-side-block-wrapper .side-block {
-  flex: 1;
-  min-height: 100px;
-  border-radius: 12px; 
-  background-color: rgba(30, 30, 30, 0.3);
-  border: 1px solid rgba(179, 163, 105, 0.2);
-  padding: 15px;
-}
+/* Styles for SideBySideBlock are now in SideBySideBlock.css */
 
 @media (max-width: 768px) {
-  .user-side-by-side-block-wrapper .side-by-side-container {
-    flex-direction: column;
-    gap: 20px;
+  .user-page-viewer {
+    padding: 15px;
+    padding-bottom: 80px; /* Space for highlights */
+  }
+
+  .user-header-text {
+    font-size: 1.5rem; /* Adjusted from 1.8rem */
+    padding: 0 20px;
+  }
+
+  .user-profile-content,
+  .user-page-content-area {
+    padding: 20px;
+    margin-top: 80vh; /* Ensure content starts below header */
+  }
+
+  .user-navigation-tabs,
+  .user-navigation {
+    gap: 8px;
+    justify-content: flex-start; /* Allow wrapping */
+  }
+
+  .user-nav-tab,
+  .user-nav-button,
+  .user-page-tab {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+
+  .user-highlights-container {
+    padding: 10px 15px;
+  }
+  .user-highlights-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .user-highlight-tag {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .user-block-title {
+    font-size: 18px; /* Adjusted from 22px */
+  }
+  .user-block-content {
+    font-size: 15px; /* Ensure readability */
+  }
+
+  .user-edit-profile-btn {
+    padding: 10px 25px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-page-viewer {
+    padding: 10px;
+    padding-bottom: 70px;
+  }
+  
+  .user-header-text {
+    font-size: 1.3rem;
+    padding: 0 10px;
+  }
+
+  .user-profile-content,
+  .user-page-content-area {
+    padding: 15px;
+    margin-top: 75vh;
+  }
+
+  .user-nav-tab,
+  .user-nav-button,
+  .user-page-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  .user-highlights-title {
+    font-size: 14px;
+  }
+  .user-highlight-tag {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .user-block-title {
+    font-size: 16px;
+  }
+  .user-block-content {
+    font-size: 14px;
+  }
+  .user-edit-profile-btn {
+    padding: 8px 20px;
+    font-size: 14px;
   }
 }

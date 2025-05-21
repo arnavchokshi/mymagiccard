@@ -54,10 +54,13 @@
 /* Block container styles */
 .block-container {
   position: relative;
-  margin-bottom: 20px;
-  border-radius: 16px;
+  margin-bottom: 0;
+  border-radius: 0;
   transition: all 0.3s ease;
   transform-style: preserve-3d;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(255,255,255,0.15) 100%);
+  box-shadow: none;
+  border: none;
 }
 
 .horizontal-blocks-group .block-container {
@@ -113,7 +116,7 @@
 .drop-zone-wrapper {
   position: relative;
   min-height: 30px;
-  margin: 15px 0;
+  margin: 0;
   width: 100%;
   transition: all 0.3s ease;
 }

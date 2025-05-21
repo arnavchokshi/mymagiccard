@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 
 
@@ -70,6 +70,9 @@ const EditProfile = () => {
   const [blockToDelete, setBlockToDelete] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(true);
   const [selectedBlock, setSelectedBlock] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showNameInBar, setShowNameInBar] = useState(false);
+  const headerRef = useRef(null);
 
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
@@ -139,6 +142,11 @@ const EditProfile = () => {
       setSidebarActive(true);
     }, 100);
   }, [id]);
+
+  // Toggle sidebar for mobile
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   // Handle typing text changes
   const handleTypedTextChange = (e) => {
@@ -436,132 +444,69 @@ const EditProfile = () => {
     return blockTypes.filter((block) => categoryTypes.includes(block.type));
   };
 
+  // Scroll listener for sticky name
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!headerRef.current) return;
+      const headerBottom = headerRef.current.getBoundingClientRect().bottom;
+      setShowNameInBar(headerBottom < 60); // 60px is the height of the fixed bar
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleHeaderNameChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      name: e.target.value
+    }));
+  };
+
+  const handleHeaderSubtitleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      header: e.target.value
+    }));
+  };
+
   return (
-    <div className="edit-page">
-      <aside className={`sidebar ${sidebarActive ? "active" : ""}`}>
-        <div className="sidebar-header">
-          <h2>Editor Tools</h2>
-        </div>
-
-        {Object.keys(blockCategories).map((category) => (
-          <div key={category} className="sidebar-category">
-            <div className="sidebar-category-title">{category}</div>
-            <div className="block-options-container">
-              {getBlocksByCategory(category).map((block) => (
-                <div
-                  key={block.type}
-                  className={`block-option ${selectedBlock === block.type ? "selected" : ""}`}
-                  draggable
-                  data-tooltip={block.tooltip}
-                  onDragStart={(e) => {
-                    setDraggedBlockType(block.type);
-                    setIsDragging(true);
-                    e.dataTransfer.setData("block-type", block.type);
-                  }}
-                  onDragEnd={() => {
-                    setIsDragging(false);
-                    setDraggedBlockType(null);
-                  }}
-                  onClick={() => {
-                    const newBlock = {
-                      id: generateUniqueBlockId(),
-                      type: block.type,
-                      content: getDefaultBlockContent(block.type)
-                    };
-                    updateBlocksForActivePage([...blocksList, newBlock]);
-                    setSelectedBlock(block.type);
-                    setTimeout(() => setSelectedBlock(null), 1000);
-                  }}
-                >
-                  {block.label}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-          <div className="sidebar-category">
-            <div className="sidebar-category-title">Settings</div>
-            <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
-              Save Profile
-            </button>
-
-            <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
-              View Public Profile
-            </Link>
-
-            <Link to="/generate" className="block-option enhance-ai-button">
-              <span className="enhance-ai-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21M12 3V21M21 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M19.5 12C19.5 16.1421 16.1421 19.5 12 19.5C7.85786 19.5 4.5 16.1421 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
-                  <circle cx="12" cy="12" r="1" fill="currentColor"/>
-                </svg>
-              </span>
-              <span>Enhance with AI</span>
-              <span className="enhance-ai-glow"></span>
-            </Link>
-
-
-        </div>
-      </aside>
-
-      <main className="profile-editor">
-        <div
-          className="profile-header-background"
-          style={{
-            backgroundImage: formData.backgroundPhoto
-              ? `url(${formData.backgroundPhoto instanceof File ? URL.createObjectURL(formData.backgroundPhoto) : formData.backgroundPhoto})`
-              : `url('/defaultBackground.jpg')`,
+    <>
+      <div className="fixed-page-tabs-bar">
+        <label htmlFor="background-upload" className="change-background-btn" style={{ margin: '0 24px 0 0', position: 'static' }}>
+          Change Background
+        </label>
+        <button 
+          className="change-background-btn" 
+          onClick={() => {
+            const newName = prompt("Enter your name:", formData.name);
+            if (newName) {
+              const newHeader = prompt("Enter your header text:", formData.header);
+              if (newHeader) {
+                setFormData(prev => ({
+                  ...prev,
+                  name: newName,
+                  header: newHeader
+                }));
+              }
+            }
           }}
+          style={{ margin: '0 24px 0 0', position: 'static' }}
         >
-          <div className="profile-header-overlay">
-            <input
-              type="file"
-              accept="image/*"
-              id="background-upload"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) setFormData({ ...formData, backgroundPhoto: file });
-              }}
-              style={{ display: "none" }}
-            />
-            <label htmlFor="background-upload" className="change-background-btn">
-              Change Background
-            </label>
-            <div className="profile-text profile-single-line">
-              <input
-                className="profile-single-input"
-                value={typedText}
-                onChange={handleTypedTextChange}
-                onClick={() => setIsEditing(true)}
-                onBlur={() => setIsEditing(false)}
-                style={{
-                  animation: !isEditing && !isTypingAnimationDone ? 
-                    `typing 4s steps(${typedText.length}, end) forwards, blink-caret 0.75s step-end 4s 1` : 
-                    'none',
-                  width: (isEditing || isTypingAnimationDone) ? '100%' : '0',
-                  '--text-width': `${typedText.length}ch`,
-                  borderRight: isEditing ? '2px solid rgba(255, 255, 255, 0.75)' : 'none'
-                }}
-              />
-            </div>
-            
-          </div>
-        </div>
-        
-        <div className="main-content">
-          <HighlightsBar
-            highlights={formData.highlights}
-            newHighlight={newHighlight}
-            setNewHighlight={setNewHighlight}
-            onAdd={handleAddHighlight}
-            onRemove={handleRemoveHighlight}
-          />
-
-        <div className="divider-line" />
-
+          Change Name & Header
+        </button>
+        <input
+          type="file"
+          accept="image/*"
+          id="background-upload"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) setFormData({ ...formData, backgroundPhoto: file });
+          }}
+          style={{ display: "none" }}
+        />
+        <div className={`bar-username${showNameInBar ? " visible" : ""}`}>{formData.name}</div>
+        <div style={{ flex: 1 }} />
         <PageTabs
           pages={pages}
           activePageId={activePageId}
@@ -573,33 +518,145 @@ const EditProfile = () => {
           }}
           onRenamePage={handleRenamePage}
         />
+      </div>
+      <div className="edit-page">
+        <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
+          ☰ {/* Hamburger Icon */}
+        </button>
+        <aside className={`sidebar ${sidebarActive ? "active" : ""} ${isSidebarOpen ? "open" : ""}`}>
+          <div className="sidebar-header">
+            <h2>Editor Tools</h2>
+          </div>
 
-        <div className="blocks-list">
-          <BlockDropZone
-            blocks={blocksList}
-            draggedBlockType={draggedBlockType}
-            renderBlock={renderBlock}
-            isDragging={isDragging}
-            onInsertBlock={(type, index) => {
-              const updated = [...blocksList];
-              if (!type) {
-                updated.splice(index, 1);
-              } else {
-                const newBlock = {
-                  id: generateUniqueBlockId(),
-                  type,
-                  content: getDefaultBlockContent(type),
-                };
-                while (updated.length < index) updated.push(null);
-                updated.splice(index, 0, newBlock);
-              }
-              updateBlocksForActivePage(updated);
+          {Object.keys(blockCategories).map((category) => (
+            <div key={category} className="sidebar-category">
+              <div className="sidebar-category-title">{category}</div>
+              <div className="block-options-container">
+                {getBlocksByCategory(category).map((block) => (
+                  <div
+                    key={block.type}
+                    className={`block-option ${selectedBlock === block.type ? "selected" : ""}`}
+                    draggable
+                    data-tooltip={block.tooltip}
+                    onDragStart={(e) => {
+                      setDraggedBlockType(block.type);
+                      setIsDragging(true);
+                      e.dataTransfer.setData("block-type", block.type);
+                    }}
+                    onDragEnd={() => {
+                      setIsDragging(false);
+                      setDraggedBlockType(null);
+                    }}
+                    onClick={() => {
+                      const newBlock = {
+                        id: generateUniqueBlockId(),
+                        type: block.type,
+                        content: getDefaultBlockContent(block.type)
+                      };
+                      updateBlocksForActivePage([...blocksList, newBlock]);
+                      setSelectedBlock(block.type);
+                      setTimeout(() => setSelectedBlock(null), 1000);
+                    }}
+                  >
+                    {block.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div className="sidebar-category">
+            <div className="sidebar-category-title">Settings</div>
+            <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
+              Save Profile
+            </button>
+
+            <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
+              View Public Profile
+            </Link>
+
+            <Link to="/generate" className="block-option enhance-ai-button" style={{ marginTop: 12 }}>
+              <span className="enhance-ai-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21M12 3V21M21 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M19.5 12C19.5 16.1421 16.1421 19.5 12 19.5C7.85786 19.5 4.5 16.1421 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                </svg>
+              </span>
+              <span>Enhance with AI</span>
+              <span className="enhance-ai-glow"></span>
+            </Link>
+          </div>
+        </aside>
+
+        <main className="profile-editor">
+          <div
+            className="profile-header-background"
+            style={{
+              backgroundImage: formData.backgroundPhoto
+                ? `url(${formData.backgroundPhoto instanceof File ? URL.createObjectURL(formData.backgroundPhoto) : formData.backgroundPhoto})`
+                : `url('/defaultBackground.jpg')`,
             }}
-          />
-        </div>
-        </div>
-      </main>
-    </div>
+          >
+            <div className="profile-header-overlay">
+              <div className="fancy-header-center" ref={headerRef}>
+                <h1 className="fancy-header-name">
+                  {formData.name || "Your Name"}
+                </h1>
+                <div className="fancy-header-subtitle">
+                  <span className="typewriter-text">
+                    {formData.header || "Currently @ ..."}
+                  </span>
+                </div>
+                <div className="down-arrow-anim">
+                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 10V26" stroke="#b3a369" strokeWidth="2.5" strokeLinecap="round"/>
+                    <path d="M11 19L18 26L25 19" stroke="#b3a369" strokeWidth="2.5" strokeLinecap="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="main-content">
+            <HighlightsBar
+              highlights={formData.highlights}
+              newHighlight={newHighlight}
+              setNewHighlight={setNewHighlight}
+              onAdd={handleAddHighlight}
+              onRemove={handleRemoveHighlight}
+            />
+
+          <div className="divider-line" />
+
+          <div className="blocks-list">
+            <BlockDropZone
+              blocks={blocksList}
+              draggedBlockType={draggedBlockType}
+              renderBlock={renderBlock}
+              isDragging={isDragging}
+              onInsertBlock={(type, index) => {
+                const updated = [...blocksList];
+                if (!type) {
+                  updated.splice(index, 1);
+                } else {
+                  const newBlock = {
+                    id: generateUniqueBlockId(),
+                    type,
+                    content: getDefaultBlockContent(type),
+                  };
+                  while (updated.length < index) updated.push(null);
+                  updated.splice(index, 0, newBlock);
+                }
+                updateBlocksForActivePage(updated);
+              }}
+            />
+          </div>
+          </div>
+        </main>
+      </div>
+    </>
   );
 };
 

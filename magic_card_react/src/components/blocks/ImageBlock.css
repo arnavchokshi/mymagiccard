@@ -1,6 +1,6 @@
 .image-block-wrapper {
     background-color: rgba(15, 15, 15, 0.75);
-    border: 1px solid var(--primary-neon);
+    border: 1px solid var(--primary-neon, #b3a369);
     padding: 20px;
     border-radius: 12px;
     margin-bottom: 30px;
@@ -23,12 +23,14 @@
     object-fit: contain;
     border-radius: 10px;
     transition: opacity 0.3s ease;
+    display: block;
   }
   
   .no-image {
     padding: 60px 0;
     font-style: italic;
     color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
   }
   
   .carousel-controls {
@@ -40,6 +42,7 @@
     justify-content: space-between;
     padding: 0 20px;
     pointer-events: none;
+    box-sizing: border-box;
   }
   
   .carousel-controls button {
@@ -54,6 +57,9 @@
     cursor: pointer;
     pointer-events: all;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .carousel-controls button:hover {
@@ -65,9 +71,9 @@
     display: inline-block;
     padding: 10px 16px;
     background-color: rgba(179, 163, 105, 0.2);
-    border: 1px solid var(--primary-neon);
+    border: 1px solid var(--primary-neon, #b3a369);
     border-radius: 6px;
-    color: var(--primary-neon);
+    color: var(--primary-neon, #b3a369);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -77,4 +83,260 @@
   .upload-label:hover {
     background-color: rgba(179, 163, 105, 0.3);
   }
+
+@media (max-width: 768px) {
+  .image-block-wrapper {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  .carousel-image {
+    max-height: 300px;
+  }
+  .no-image {
+    padding: 40px 0;
+    font-size: 15px;
+  }
+  .carousel-controls {
+    padding: 0 10px;
+  }
+  .carousel-controls button {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  .upload-label {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-block-wrapper {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .carousel-image {
+    max-height: 250px;
+    border-radius: 8px;
+  }
+  .carousel {
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .no-image {
+    padding: 30px 0;
+    font-size: 14px;
+  }
+  .carousel-controls button {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  .upload-label {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
   
+.image-block-wrapper {
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+/* Main focus on the image */
+.carousel {
+  position: relative;
+  width: 100%;
+  max-height: 500px;
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: transparent;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.carousel-image {
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+  object-fit: cover;
+  border-radius: 16px;
+  transition: transform 0.4s ease;
+}
+
+.carousel-image:hover {
+  transform: scale(1.02);
+}
+
+/* Image caption styling */
+.image-caption {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  max-width: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 12px 20px;
+  color: white;
+  text-align: right;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.caption-text {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--primary-neon, #b3a369);
+  text-shadow: 
+    0 0 1px rgba(179, 163, 105, 0.3),
+    0 0 4px rgba(179, 163, 105, 0.2);
+}
+
+.caption-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  border-radius: 6px;
+  color: var(--primary-neon, #b3a369);
+  padding: 10px 15px;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  text-align: right;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
+}
+
+.caption-input:focus {
+  outline: none;
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 
+    0 0 0 1px rgba(179, 163, 105, 0.3),
+    0 0 8px rgba(179, 163, 105, 0.2);
+}
+
+.caption-input::placeholder {
+  color: rgba(179, 163, 105, 0.5);
+  font-style: italic;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0;
+}
+
+/* Arrows less prominent */
+.carousel-controls {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  padding: 0 10px;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.carousel-controls button {
+  pointer-events: all;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.carousel-controls button:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  transform: scale(1.1);
+}
+
+/* Centered upload button at bottom */
+.upload-label {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background-color: rgba(179, 163, 105, 0.15);
+  color: var(--primary-neon, #b3a369);
+  font-size: 15px;
+  padding: 12px 24px;
+  border: 1px solid var(--primary-neon, #b3a369);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-weight: 500;
+}
+
+.upload-label:hover {
+  background-color: rgba(179, 163, 105, 0.3);
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.no-image {
+  padding: 100px 0;
+  font-style: italic;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .carousel-image {
+    max-height: 400px;
+  }
+  
+  .image-caption {
+    bottom: 15px;
+    right: 15px;
+    padding: 10px 15px;
+  }
+  
+  .caption-text,
+  .caption-input {
+    font-size: 16px;
+  }
+  
+  .upload-label {
+    bottom: 15px;
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-image {
+    max-height: 300px;
+  }
+  
+  .image-caption {
+    bottom: 12px;
+    right: 12px;
+    padding: 8px 12px;
+    max-width: 60%;
+  }
+  
+  .caption-text,
+  .caption-input {
+    font-size: 14px;
+  }
+  
+  .upload-label {
+    bottom: 12px;
+    font-size: 13px;
+    padding: 8px 16px;
+  }
+}

@@ -7,6 +7,7 @@
     border-radius: 8px;
     border: 2px dashed #555;
     transition: all 0.3s ease;
+    box-sizing: border-box;
   }
   
   .code-block-container.highlight-drop {
@@ -33,6 +34,7 @@
     border-radius: 6px;
     resize: vertical;
     font-size: 16px;
+    box-sizing: border-box;
   }
   
   .code-block-preview {
@@ -41,6 +43,7 @@
     border: 1px solid #444;
     background-color: white;
     border-radius: 6px;
+    box-sizing: border-box;
   }
   
   /* Add animation for when items are dragged over */
@@ -67,10 +70,11 @@
     padding: 16px;
   }
   
+  .code-block-readonly pre,
   .code-block-readonly {
     width: 100%;
     max-height: 300px;
-    overflow-y: auto;
+    overflow: auto;
     font-family: monospace;
     background-color: rgba(0, 0, 0, 0.5);
     color: #e0e0e0;
@@ -78,5 +82,58 @@
     padding: 12px;
     margin: 0;
     white-space: pre-wrap;
+    word-break: break-all;
     line-height: 1.5;
+    font-size: 14px;
+    box-sizing: border-box;
   }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .code-block-container {
+    padding: 8px;
+    gap: 8px;
+  }
+  .code-block-editor {
+    font-size: 14px;
+    height: 180px;
+    padding: 8px;
+  }
+  .code-block-preview {
+    height: 250px;
+  }
+  .code-block-readonly pre,
+  .code-block-readonly {
+    font-size: 13px;
+    padding: 10px;
+    max-height: 250px;
+  }
+  .drop-instructions {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .code-block-container {
+    padding: 6px;
+    gap: 6px;
+  }
+  .code-block-editor {
+    font-size: 12px;
+    height: 150px;
+    padding: 6px;
+  }
+  .code-block-preview {
+    height: 200px;
+  }
+  .code-block-readonly pre,
+  .code-block-readonly {
+    font-size: 11px;
+    padding: 8px;
+    max-height: 200px;
+    line-height: 1.4;
+  }
+   .drop-instructions {
+    font-size: 12px;
+  }
+}

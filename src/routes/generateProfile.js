@@ -101,14 +101,23 @@ Each block must include:
 
 - "image":
   {
-    "imageUrl": "https://cdn.example.com/image.jpg",
+    "imageUrl": "", Leave blank
     "caption": "Short caption"
   }
 
+When generating a "code" block:
+The content field must be a single properly escaped string.
+Do not wrap code in an object like { language, code }.
+Escape all inner double quotes and preserve line breaks as \n.
+The structure should look like:
+
 - "code":
-  {
-  "content": "<html>\n  <head>\n    <title>Example</title>\n  </head>\n  <body>...</body>\n</html>"
+{
+  "id": "block-xyz",
+  "type": "code",
+  "content": "<html>\n  <head>\n    <title>Example</title>\n  </head>\n  <body>\n    <p>Hello world!</p>\n  </body>\n</html>"
 }
+
 
 - "flip":
   {
@@ -151,8 +160,13 @@ Each block must include:
 
 STYLE & COMPLETENESS INSTRUCTIONS:
 
-- Use only 3-5 pages**. Seperate pages based on main ideas shared in resume. Always have an "About", "Education", and "Experience" page. "Project", "Skills", or "Extra-Ciricular" could be an example of extra pages, but this can be completely different based soley by the information the user inputs.
-- Max of 7 highlights. Character limit of 20 per highlight
+- Use only 3-4 pages**. 
+Unless otherwise specified, have an about page. This page should have user bio, pdf blokc for resume, profile photo, and contact information. 
+Have an education page. This page should have user education history using flip blocks.
+Have a projects page. This page should represent all projects with a sidebyside block. One text and one image.
+Have an extra-curricular page. This page should be split into two sections for skills and clubs.
+Have a professional experience page. This page should have user professional experience using side by side blocks. 
+- Max of 4 highlights. Character limit of 20 per highlight
 - Each page should contain **at least 3–6 blocks**
 - Use **all block types** at least once across all pages
 - Fill out content thoroughly — include projects, certifications, companies, tools, achievements, etc.
@@ -169,14 +183,9 @@ For an "Education" page, use classroom, books, or graduation-themed photos.
 For a "Projects" page, use design mockups, brainstorming sessions, or creative workspaces.
 For a “Skills” page, include abstract visuals like icons or artistic representations of tools (e.g., cloud, AI, networks).
 For extracurriculars, use group activity, sports, or event photography.
-Use this exact Unsplash format for each image: https://images.unsplash.com/photo-<unique_id> where <unique_id> corresponds to actual Unsplash image IDs. Example: https://images.unsplash.com/photo-1555066931-4365d14bab8c
-Ensure at least one image block per page. You must include a block with type "image" or a "sideBySide" block that embeds an image on every page. Each image must include a meaningful caption.
-Never repeat the same image across multiple blocks. Each imageUrl should be unique in the entire JSON object.
-- Update the header as well to have max 50 characters of personalized information. 
-
 - Use side by side blocks to connect text to images or to video or to code.
 - Code blocks should always have a colored background and some sort of interactive display. Make Code blocks have relavant information with the text its next to.
-- Code blocks take in HTML and CSS only. Code must have some sort of hover animation. Visuals should be things like graphs, charts, typing style animation. Basically make sure the full code block has something and theres no empty white space.
+- Code blocks take in HTML and CSS only. Code must have some sort conplex motion of hover animation.
 
 - Use title blocks to spereate ideas within pages. Things like "Resume", "Technical skills" etc.
 - Text blocks must have at minimum 100 characters. Make up information if needed to fill block.

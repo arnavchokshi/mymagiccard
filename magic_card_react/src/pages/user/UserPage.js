@@ -12,6 +12,7 @@ import YouTubeBlock from "../../components/blocks/YouTubeBlock";
 import ImageBlock from "../../components/blocks/ImageBlock";
 import TitleBlock from "../../components/blocks/TitleBlock";
 import SideBySideBlock from "../../components/blocks/SideBySideBlock";
+import PDFBlock from "../../components/blocks/PDFBlock";
 
 // Import HighlightsBar CSS
 import "../../components/EditProfile/HighlightsBar.css";
@@ -24,24 +25,6 @@ const UserBlockWrapper = ({ children, type }) => {
   return (
     <div className={`user-block-container user-${type}-block-wrapper`}>
       {children}
-    </div>
-  );
-};
-
-// TextBlock wrapper to use custom user page styles
-const UserTextBlock = ({ block }) => {
-  const textMeta = typeof block.content === "object"
-    ? block.content
-    : { title: "", body: block.content || "" };
-
-  return (
-    <div className="user-text-block">
-      {textMeta.title && <h3 className="user-block-title">{textMeta.title}</h3>}
-      <div className="user-block-content">
-        {(textMeta.body ? textMeta.body.split('\n') : []).map((line, i) => (
-          <p key={i}>{line}</p>
-        ))}
-      </div>
     </div>
   );
 };
@@ -64,6 +47,59 @@ const UserPage = () => {
   
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
+
+  // Add state and handlers for editable blocks
+  const [blocksState, setBlocksState] = useState({});
+
+  // Handler for updating a block's content
+  const handleBlockChange = (blockId, value) => {
+    setBlocksState((prev) => ({ ...prev, [blockId]: value }));
+  };
+
+  // ContactsBlock handlers
+  const handleContactLineChange = (blockId, index, field, value) => {
+    setBlocksState((prev) => ({
+      ...prev,
+      [blockId]: {
+        ...((prev[blockId] || {})),
+        content: (prev[blockId]?.content || userData.pages?.find(p => p.id === activePageId)?.blocks?.find(b => b.id === blockId)?.content || []).map((line, i) =>
+          i === index ? { ...line, [field]: value } : line
+        )
+      }
+    }));
+  };
+  const handleAddContactLine = (blockId) => {
+    setBlocksState((prev) => ({
+      ...prev,
+      [blockId]: {
+        ...((prev[blockId] || {})),
+        content: [
+          ...((prev[blockId]?.content || userData.pages?.find(p => p.id === activePageId)?.blocks?.find(b => b.id === blockId)?.content || [])),
+          { label: "New", value: "" }
+        ]
+      }
+    }));
+  };
+  const handleRemoveContactLine = (blockId, index) => {
+    setBlocksState((prev) => ({
+      ...prev,
+      [blockId]: {
+        ...((prev[blockId] || {})),
+        content: (prev[blockId]?.content || userData.pages?.find(p => p.id === activePageId)?.blocks?.find(b => b.id === blockId)?.content || []).filter((_, i) => i !== index)
+      }
+    }));
+  };
+
+  // Add this after the existing useState declarations
+  const typingRef = React.useRef(null);
+
+  // Add this effect to calculate the text width
+  useEffect(() => {
+    if (typingRef.current) {
+      const width = typingRef.current.scrollWidth;
+      typingRef.current.style.setProperty('--text-width', `${width}px`);
+    }
+  }, [typedText]);
 
   // Update typed text when header is available
   useEffect(() => {
@@ -108,15 +144,25 @@ const UserPage = () => {
   }, [id]);
 
   const renderBlock = (block, index) => {
-    const safeBlock = { ...block };
+    const safeBlock = { ...block, ...(blocksState[block.id] || {}) };
   
     switch (block.type) {
       case "text":
-        return <UserTextBlock block={safeBlock} />;
+        return (
+          <UserBlockWrapper type="text">
+            <TextBlock block={safeBlock} readOnly />
+          </UserBlockWrapper>
+        );
       case "title":
         return (
           <UserBlockWrapper type="title">
             <TitleBlock block={safeBlock} readOnly />
+          </UserBlockWrapper>
+        );
+      case "pdf":
+        return (
+          <UserBlockWrapper type="pdf">
+            <PDFBlock block={safeBlock} readOnly />
           </UserBlockWrapper>
         );
       case "youtube":
@@ -166,16 +212,6 @@ const UserPage = () => {
             <FlipBlock block={safeBlock} readOnly />
           </UserBlockWrapper>
         );
-      case "multiBlock":
-        return (
-          <UserBlockWrapper type="multi">
-            <MultiBlock
-              block={safeBlock}
-              renderBlock={renderBlock}
-              readOnly
-            />
-          </UserBlockWrapper>
-        );
       case "contactsText":
         return (
           <UserBlockWrapper type="contacts">
@@ -190,6 +226,18 @@ const UserPage = () => {
               renderBlock={renderBlock}
               readOnly
             />
+          </UserBlockWrapper>
+        );
+      case "multiBlock":
+        return (
+          <UserBlockWrapper type="multi" style={{ overflow: "visible" }}>
+            <div style={{ overflow: "visible" }}>
+              <MultiBlock
+                block={safeBlock}
+                renderBlock={renderBlock}
+                readOnly
+              />
+            </div>
           </UserBlockWrapper>
         );
       default:
@@ -240,13 +288,16 @@ const UserPage = () => {
       {/* Centered header with intro text */}
       <div className="user-page-header">
         <div className="user-header-text-center">
+          <div className="user-header-name">
+            {userData.name || "Your Name"}
+          </div>
           <div 
+            ref={typingRef}
             className="user-header-typing"
             style={{
               animation: !isTypingAnimationDone ? 
-                `typing 4s steps(${typedText.length}, end) forwards, blink-caret 0.75s step-end 4s 1` : 
-                'none',
-              width: isTypingAnimationDone ? '100%' : '0',
+                `typing 3s steps(${typedText.length}, end) forwards, blink-caret 0.75s step-end infinite` : 
+                'blink-caret 0.75s step-end infinite'
             }}
           >
             {typedText}
