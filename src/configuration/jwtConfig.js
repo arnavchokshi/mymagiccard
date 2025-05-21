@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 
-const secretkey = crypto.randomBytes(32).toString('hex');
+// Use environment variable for JWT secret or fallback to a default for development
+const secretkey = process.env.JWT_SECRET || "your-default-development-secret-key";
 
-module.exports = {secretkey: secretkey}
+module.exports = { secretkey };

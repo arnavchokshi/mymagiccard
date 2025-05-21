@@ -1,22 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const ModelClient = require("@azure-rest/ai-inference").default;
-const { isUnexpected } = require("@azure-rest/ai-inference");
-const { AzureKeyCredential } = require("@azure/core-auth");
-const bcrypt = require("bcryptjs");
+const { Configuration, OpenAIApi } = require("openai");
 const User = require("../models/user");
 const { authenticateToken } = require("../utils/authMiddleware");
 const mongoose = require("mongoose");
 
-const endpoint = "https://models.github.ai/inference";
-const model = "openai/gpt-4.1";
-const token = process.env.AZURE_GITHUB_KEY;
-
-if (!token) {
-  console.warn("⚠️ Missing AZURE_GITHUB_KEY in environment variables");
-}
-
-const client = ModelClient(endpoint, new AzureKeyCredential(token));
+// Configure OpenAI
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY
+});
+const openai = new OpenAIApi(configuration);
 
 router.post("/generate-profile", authenticateToken, async (req, res) => {
   const { resumeText } = req.body;
@@ -226,29 +219,25 @@ resume:
 ${resumeText}
 `;
 
-
-
 console.log("🧠 Sending prompt to GPT...");
 console.log("🔍 req.user payload from token:", req.user);
 
-
-const response = await client.path("/chat/completions").post({
-  body: {
-    messages: [
-      { role: "system", content: "You convert resumes into structured JSON for web profiles." },
-      { role: "user", content: prompt }
-    ],
-    temperature: 0.6,
-    model
-  }
+const response = await openai.createChatCompletion({
+  model: "gpt-4",
+  messages: [
+    {
+      role: "system",
+      content: "You convert resumes into structured JSON for web profiles."
+    },
+    {
+      role: "user",
+      content: prompt
+    }
+  ],
+  temperature: 0.6
 });
 
-if (isUnexpected(response)) {
-  console.error("❌ Unexpected response from Azure API:", response.body);
-  throw response.body.error;
-}
-
-const rawJson = response.body.choices?.[0]?.message?.content;
+const rawJson = response.data.choices[0].message.content;
 console.log("📝 Raw GPT output:\n", rawJson);
 
 let parsed;
