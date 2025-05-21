@@ -23,7 +23,7 @@ const path = require("path");
 const { secretkey } = require("../configuration/jwtConfig");
 
 // ✅ REGISTER a new user
-router.post("/user/register", async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
     const { email, name, password } = req.body;
 
@@ -57,7 +57,7 @@ router.post("/user/register", async (req, res) => {
 });
 
 // ✅ PUBLIC PROFILE ROUTE
-router.get("/public/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
@@ -102,7 +102,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     console.log("🔍 highlights (raw):", highlights);
     console.log("🔍 pages (raw):", pages);
 
-    const parsedPages = JSON.parse(pages); // likely crash here
+    const parsedPages = JSON.parse(pages);
 
     const update = {
       name,
@@ -115,7 +115,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
 
     // Only set backgroundPhoto if file and filename are defined
     if (req.file && req.file.filename) {
-      update.backgroundPhoto = `http://localhost:2000/uploads/${req.file.filename}`;
+      update.backgroundPhoto = `${process.env.BASE_URL || 'http://localhost:2000'}/uploads/${req.file.filename}`;
     } else if (backgroundPhotoUrl) {
       update.backgroundPhoto = backgroundPhotoUrl;
     }
@@ -131,7 +131,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     user.activePageId = update.activePageId;
     if (update.backgroundPhoto) user.backgroundPhoto = update.backgroundPhoto;
 
-    await user.save();  // ✅ ensures Mongoose uses schema correctly
+    await user.save();
 
     res.status(200).json({
       message: "Profile updated successfully.",
