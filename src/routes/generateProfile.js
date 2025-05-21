@@ -1,15 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 const User = require("../models/user");
 const { authenticateToken } = require("../utils/authMiddleware");
 const mongoose = require("mongoose");
 
 // Configure OpenAI
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-const openai = new OpenAIApi(configuration);
 
 router.post("/generate-profile", authenticateToken, async (req, res) => {
   const { resumeText } = req.body;
@@ -222,7 +221,7 @@ ${resumeText}
 console.log("🧠 Sending prompt to GPT...");
 console.log("🔍 req.user payload from token:", req.user);
 
-const response = await openai.createChatCompletion({
+const response = await openai.chat.completions.create({
   model: "gpt-4",
   messages: [
     {
@@ -237,7 +236,7 @@ const response = await openai.createChatCompletion({
   temperature: 0.6
 });
 
-const rawJson = response.data.choices[0].message.content;
+const rawJson = response.choices[0].message.content;
 console.log("📝 Raw GPT output:\n", rawJson);
 
 let parsed;
