@@ -541,3 +541,21 @@
     font-size: 12px;
   }
 }
+
+.convert-button {
+  background-color: rgba(64, 128, 255, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border: none;
+  pointer-events: auto;
+  margin-left: 10px;
+}
+
+.convert-button:hover {
+  background-color: rgba(64, 128, 255, 0.9);
+  transform: translateY(-2px);
+}

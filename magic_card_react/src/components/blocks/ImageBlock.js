@@ -2,11 +2,35 @@ import React, { useState } from "react";
 import "./ImageBlock.css";
 
 const ImageBlock = ({ block, onChange, readOnly }) => {
-  // Update content structure to include captions
-  const content = block.content || [];
-  const images = Array.isArray(content) 
-    ? content.map(item => typeof item === 'string' ? { url: item, caption: '' } : item)
-    : [];
+  // Normalize the content structure
+  const normalizeContent = () => {
+    if (!block.content) return [];
+    
+    // If content is an array
+    if (Array.isArray(block.content)) {
+      return block.content.map(item => {
+        if (typeof item === 'string') return { url: item, caption: '' };
+        return item;
+      });
+    }
+    
+    // If content is an object with imageUrl
+    if (block.content.imageUrl) {
+      return [{ 
+        url: block.content.imageUrl, 
+        caption: block.content.caption || '' 
+      }];
+    }
+    
+    // If content is a single URL string
+    if (typeof block.content === 'string') {
+      return [{ url: block.content, caption: '' }];
+    }
+    
+    return [];
+  };
+
+  const images = normalizeContent();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,7 +56,7 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
         });
   
         const data = await res.json();
-        console.log("Upload response:", data); // Debug log
+        console.log("Upload response:", data);
         
         if (res.ok && data.url) {
           uploadedImages.push({ url: data.url, caption: '' });
@@ -47,20 +71,59 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
   
     if (uploadedImages.length > 0) {
       const newImages = [...images, ...uploadedImages];
-      console.log("Updating images:", newImages); // Debug log
-      onChange(newImages);
-      setCurrentIndex(newImages.length - 1); // Show the newly uploaded image
+      
+      // Maintain the original content format
+      if (Array.isArray(block.content)) {
+        onChange(newImages);
+      } else if (block.content && typeof block.content === 'object') {
+        // If it was originally a single image object format
+        const lastImage = uploadedImages[uploadedImages.length - 1];
+        onChange({
+          imageUrl: lastImage.url,
+          caption: lastImage.caption
+        });
+      } else {
+        // Default to array format if format is unknown
+        onChange(newImages);
+      }
+      
+      setCurrentIndex(newImages.length - 1);
     }
     setIsLoading(false);
   };
 
   const handleCaptionChange = (e) => {
-    const newImages = [...images];
-    newImages[currentIndex] = {
-      ...newImages[currentIndex],
-      caption: e.target.value
-    };
-    onChange(newImages);
+    if (!images[currentIndex]) return;
+
+    if (Array.isArray(block.content)) {
+      const newImages = [...images];
+      newImages[currentIndex] = {
+        ...newImages[currentIndex],
+        caption: e.target.value
+      };
+      onChange(newImages);
+    } else {
+      // Handle single image format
+      onChange({
+        imageUrl: images[currentIndex].url,
+        caption: e.target.value
+      });
+    }
+  };
+
+  const handleDeleteImage = () => {
+    if (images.length === 0) return;
+    
+    if (Array.isArray(block.content)) {
+      const newImages = images.filter((_, index) => index !== currentIndex);
+      onChange(newImages);
+      if (currentIndex >= newImages.length) {
+        setCurrentIndex(Math.max(newImages.length - 1, 0));
+      }
+    } else {
+      // For single image format, clear the content
+      onChange({ imageUrl: '', caption: '' });
+    }
   };
 
   const handlePrev = () => {
@@ -71,29 +134,17 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
-  const handleDeleteImage = () => {
-    if (images.length === 0) return;
-    
-    const newImages = images.filter((_, index) => index !== currentIndex);
-    onChange(newImages);
-    
-    // Adjust current index if necessary
-    if (currentIndex >= newImages.length) {
-      setCurrentIndex(Math.max(newImages.length - 1, 0));
-    }
-  };
-
   return (
     <div className="image-block-wrapper">
       <div className="carousel">
-        {images.length > 0 ? (
+        {images.length > 0 && images[currentIndex] ? (
           <>
             <img
               src={images[currentIndex].url}
               alt={images[currentIndex].caption || `Slide ${currentIndex + 1}`}
               className="carousel-image"
               onError={(e) => {
-                console.error("Image load error:", e.target.src); // Debug log
+                console.error("Image load error:", e.target.src);
                 e.target.src = '/placeholder-image.jpg';
                 e.target.classList.add('image-error');
               }}
@@ -124,14 +175,14 @@ const ImageBlock = ({ block, onChange, readOnly }) => {
           </div>
         )}
 
-        {/* Separated upload and delete controls */}
+        {/* Upload and delete controls */}
         {!readOnly && (
           <div className="bottom-controls">
             <label className="upload-button">
               <span>Upload Image</span>
               <input
                 type="file"
-                multiple
+                multiple={Array.isArray(block.content)}
                 accept="image/*"
                 onChange={handleImageUpload}
                 disabled={isLoading}

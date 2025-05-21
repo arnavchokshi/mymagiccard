@@ -101,8 +101,12 @@ Each block must include:
 
 - "image":
   {
-    "imageUrl": "", Leave blank
-    "caption": "Short caption"
+    "content": [
+      {
+        "url": "https://images.unsplash.com/photo-xxxx",
+        "caption": "Short caption"
+      }
+    ]
   }
 
 When generating a "code" block:
@@ -160,37 +164,65 @@ The structure should look like:
 
 STYLE & COMPLETENESS INSTRUCTIONS:
 
-- Use only 3-4 pages**. 
-Unless otherwise specified, have an about page. This page should have user bio, pdf blokc for resume, profile photo, and contact information. 
-Have an education page. This page should have user education history using flip blocks.
-Have a projects page. This page should represent all projects with a sidebyside block. One text and one image.
-Have an extra-curricular page. This page should be split into two sections for skills and clubs.
-Have a professional experience page. This page should have user professional experience using side by side blocks. 
-- Max of 4 highlights. Character limit of 20 per highlight
-- Each page should contain **at least 3–6 blocks**
-- Use **all block types** at least once across all pages
-- Fill out content thoroughly — include projects, certifications, companies, tools, achievements, etc.
-- Visuals (images, YouTube, etc.) should be meaningful and diverse
-- Avoid empty strings. Prefer imageUrl https://... over ""
-- Do **not** wrap your response in Markdown, backticks, or quotes
-- Ensure the entire result is a **valid JavaScript object**
-- Use at most 1 multiblocks per page. Have at least 3 blocks in a multiblock.
-All image blocks must contain realistic, thematically appropriate images using Unsplash URLs (e.g., "https://images.unsplash.com/photo-1464983953574-0892a716854b").
-Do not use empty strings or placeholders for imageUrl. Do not include “unsplash.com/photos/” URLs or incomplete links.
-Choose Unsplash image URLs that match the theme of the block or page. For example:
-For a block about software development, use tech-related images (code on screen, laptops, digital workspaces).
-For an "Education" page, use classroom, books, or graduation-themed photos.
-For a "Projects" page, use design mockups, brainstorming sessions, or creative workspaces.
-For a “Skills” page, include abstract visuals like icons or artistic representations of tools (e.g., cloud, AI, networks).
-For extracurriculars, use group activity, sports, or event photography.
-- Use side by side blocks to connect text to images or to video or to code.
-- Code blocks should always have a colored background and some sort of interactive display. Make Code blocks have relavant information with the text its next to.
-- Code blocks take in HTML and CSS only. Code must have some sort conplex motion of hover animation.
+1. PAGE STRUCTURE:
+   - About Page (Required):
+     • Title block: Professional introduction
+     • Image block: Profile photo placeholder
+     • Text block: Bio (min 200 characters)
+     • PDF block: Resume
+     • ContactsText block: All professional links
+     • MultiBlock: Skills overview with categories
 
-- Use title blocks to spereate ideas within pages. Things like "Resume", "Technical skills" etc.
-- Text blocks must have at minimum 100 characters. Make up information if needed to fill block.
+   - Education Page:
+     • Title block: "Educational Journey"
+     • Flip blocks for each education milestone:
+       - Front: Institution logo, degree name, years
+       - Back: Key achievements, courses, projects
+     • Code block: Showcase relevant academic projects
 
-📄 INPUT RESUME:
+   - Projects Page:
+     • Title block: "Featured Projects"
+     • SideBySide blocks for each project:
+       - Left: Technical details, outcomes, technologies
+       - Right: Project visual or demo
+     • Code blocks: Show complex animations or interactive elements
+
+   - Professional Experience:
+     • Title block: "Work Experience"
+     • SideBySide blocks for each role:
+       - Left: Role details, achievements, metrics
+       - Right: Company-related visuals
+     • MultiBlock: Skills and technologies used
+
+2. CODE BLOCK GUIDELINES:
+   - Each code block should demonstrate one of these animations:
+     a) 3D card flip with gradient borders
+     b) Floating elements with particle effects
+     c) Progressive reveal with scroll animations
+     d) Interactive hover states with glowing effects
+     e) Morphing shapes with SVG animations
+   - Include comments explaining the animation
+   - Use CSS variables for easy customization
+   - Implement smooth transitions (0.3s - 0.6s)
+   - Add subtle shadows and gradient effects
+   - Include hover, focus, and active states
+
+3. CONTENT QUALITY:
+   - All text blocks: Minimum 150 characters
+   - Use bullet points for better readability
+   - Include metrics and specific examples
+   - Maintain professional tone
+   - Break long content into paragraphs
+   - Use active voice and action verbs
+
+4. VISUAL HIERARCHY:
+   - Start each page with a title block
+   - Group related blocks using multiBlock
+   - Alternate between different block types
+   - Use sideBySide for visual content
+   - Ensure logical content flow
+
+resume:
 ${resumeText}
 `;
 
