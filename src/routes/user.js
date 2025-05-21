@@ -1,208 +1,343 @@
 const express = require("express");
-const cors = require("cors");
-const multer = require("multer");
-const path = require("path");
-const userController = require("../controllers/user");
-const authMiddleware = require("../utils/authMiddleware");
-const User = require("../models/user");
-const { getLinkPreview } = require("link-preview-js");
-
-
 const router = express.Router();
-router.use(cors());
-
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const { authenticateToken } = require("../utils/authMiddleware");
+const multer = require("multer");
+// Use disk storage for uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage });
 const ogs = require("open-graph-scraper");
+const path = require("path");
 
-router.get("/link-preview", async (req, res) => {
+
+
+// Secret key (ideally store in .env)
+const { secretkey } = require("../configuration/jwtConfig");
+
+
+// ✅ REGISTER a new user
+router.post("/user/register", async (req, res) => {
+  try {
+    const { email, name, password } = req.body;
+
+    if (!email || !name || !password) {
+      return res.status(400).json({ message: "All fields required." });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: "User already exists." });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      email,
+      name,
+      password: hashedPassword,
+      highlights: [],
+      pages: [],
+      activePageId: "main"
+    });
+
+    await newUser.save();
+
+    const token = jwt.sign({ id: newUser._id, email: newUser.email }, secretkey, { expiresIn: "2h" });
+    res.status(201).json({ message: "User registered successfully.", token });
+
+  } catch (err) {
+    console.error("Registration error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// ✅ PUBLIC PROFILE ROUTE
+router.get("/api/public/:id", async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.json({
+        name: user.name,
+        email: user.email,
+        header: user.header,
+        highlights: user.highlights,
+        backgroundPhoto: user.backgroundPhoto,
+        pages: user.pages,
+        activePageId: user.activePageId
+      });
+      
+    } catch (err) {
+      console.error("Error fetching public profile:", err);
+      res.status(500).json({ message: "Server error fetching profile" });
+    }
+  });
+
+  
+  // 👇 THIS is the public profile route
+  router.get("/public/:id", async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      res.json({
+        name: user.name,
+        email: user.email,
+        header: user.header,
+        highlights: user.highlights,
+        backgroundPhoto: user.backgroundPhoto,
+        pages: user.pages,
+        activePageId: user.activePageId
+      });
+    } catch (err) {
+      console.error("Error in GET /public/:id:", err);
+      res.status(500).json({ message: "Server error fetching profile" });
+    }
+  });
+
+
+
+  router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async (req, res) => {
+    try {
+      console.log("🔥 req.body:", req.body);
+      console.log("🔥 req.file:", req.file);
+  
+      const {
+        name,
+        email,
+        header,
+        highlights,
+        pages,
+        blocksList,
+        activePageId,
+        backgroundPhotoUrl
+      } = req.body;
+  
+      console.log("🔍 name:", name);
+      console.log("🔍 header:", header);
+      console.log("🔍 highlights (raw):", highlights);
+      console.log("🔍 pages (raw):", pages);
+  
+      const parsedPages = JSON.parse(pages); // likely crash here
+  
+      const update = {
+        name,
+        email,
+        header,
+        highlights: JSON.parse(highlights),
+        pages: parsedPages.pages,
+        activePageId: parsedPages.activePageId
+      };
+  
+      // Only set backgroundPhoto if file and filename are defined
+      if (req.file && req.file.filename) {
+        update.backgroundPhoto = `http://localhost:2000/uploads/${req.file.filename}`;
+      } else if (backgroundPhotoUrl) {
+        update.backgroundPhoto = backgroundPhotoUrl;
+      }
+  
+      const user = await User.findById(req.user.id || req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.name = update.name;
+    user.email = update.email;
+    user.header = update.header;
+    user.highlights = update.highlights;
+    user.pages = update.pages;
+    user.activePageId = update.activePageId;
+    if (update.backgroundPhoto) user.backgroundPhoto = update.backgroundPhoto;
+
+    await user.save();  // ✅ ensures Mongoose uses schema correctly
+
+  
+      res.status(200).json({
+        message: "Profile updated successfully.",
+        user: {
+          name: user.name,
+          email: user.email,
+          header: user.header,
+          highlights: user.highlights,
+          backgroundPhoto: user.backgroundPhoto,
+          pages: user.pages,
+          activePageId: user.activePageId
+        }
+      });
+    } catch (err) {
+      console.error("❌ Profile update error:", err);
+      res.status(500).json({ message: "Server error during profile update" });
+    }
+  });
+  
+  
+  
+  router.get("/link-preview", async (req, res) => {
     const { url } = req.query;
     if (!url) return res.status(400).json({ message: "Missing URL" });
   
     try {
-      const data = await getLinkPreview(url);
+      const { result } = await ogs({ url });
   
-      res.json({
-        title: data.title || "",
-        description: data.description || "",
-        image: data.images?.[0] || "",
-        url: data.url || url
+      let imageUrl = "";
+  
+      if (Array.isArray(result.ogImage)) {
+        imageUrl = result.ogImage[0]?.url || "";
+      } else if (typeof result.ogImage === "object") {
+        imageUrl = result.ogImage.url || "";
+      }
+  
+      return res.json({
+        title: result.ogTitle || "No title",
+        description: result.ogDescription || "",
+        image: imageUrl,
+        url: result.requestUrl || url,
       });
     } catch (err) {
       console.error("Link preview error:", err.message);
-      res.status(500).json({ message: "Failed to generate preview" });
+      res.status(500).json({ message: "Failed to fetch preview" });
     }
   });
   
 
-
-// File upload configuration
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) =>
-    cb(null, Date.now() + path.extname(file.originalname))
-});
-const upload = multer({ storage });
-
-// ✅ PUBLIC profile route
-router.get("/public/:id", async (req, res) => {
-  try {
-     const user = await User.findById(req.params.id).select("name email blocks highlights profilePhoto");
-      
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
-  } catch (error) {
-    console.error("Public profile error:", error.message);
-    res.status(500).json({ message: "Error retrieving public profile" });
-  }
-});
-
-// Private route - Get all users
-router.get("/users", authMiddleware.authenticateToken, userController.getUsers);
-
-// POST /api/setup — Save full profile
-router.post(
-  "/setup",
-  authMiddleware.authenticateToken,
-  upload.single("profilePhoto"),
-  async (req, res) => {
-    try {
-      const user = await User.findById(req.user._id);
-      if (!user) return res.status(404).json({ message: "User not found" });
-
-      const { name, email, github, linkedin } = req.body;
-      const highlights = JSON.parse(req.body.highlights || "[]");
-      const blocks = JSON.parse(req.body.blocks || "[]");
-
-      user.name = name;
-      user.email = email;
-      user.github = github;
-      user.linkedin = linkedin;
-      user.highlights = highlights;
-      user.blocks = blocks;
-
-      if (req.file) {
-        user.profilePhoto = `/uploads/${req.file.filename}`;
-      }
-
-      await user.save();
-
-      res.status(200).json({ message: "Profile saved", id: user._id });
-    } catch (err) {
-      console.error("Setup error:", err.message);
-      res.status(500).json({ message: "Failed to save profile", error: err.message });
-    }
-  }
-);
-
-// Block management routes
-// Add a new block
-router.post("/:id/blocks", async (req, res) => {
-  try {
-    const { type, content } = req.body;
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const newBlock = { type, content, order: user.blocks.length };
-    user.blocks.push(newBlock);
-    await user.save();
-
-    res.status(201).json(user.blocks);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// Update a block by index
-router.put("/:id/blocks/:index", async (req, res) => {
-  try {
-    const { type, content } = req.body;
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const index = parseInt(req.params.index);
-    if (index < 0 || index >= user.blocks.length) {
-      return res.status(400).json({ message: "Invalid block index" });
-    }
-
-    user.blocks[index] = { ...user.blocks[index], type, content };
-    await user.save();
-
-    res.json(user.blocks);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Delete a block by index
-router.delete("/:id/blocks/:index", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const index = parseInt(req.params.index);
-    if (index < 0 || index >= user.blocks.length) {
-      return res.status(400).json({ message: "Invalid block index" });
-    }
-
-    user.blocks.splice(index, 1);
-    await user.save();
-
-    res.json(user.blocks);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-
-const uploadPDF = multer({
-    storage: multer.diskStorage({
-      destination: "uploads/",
-      filename: (req, file, cb) =>
-        cb(null, Date.now() + "-" + file.originalname)
-    })
-  });
-
-router.post("/upload-pdf", uploadPDF.single("pdf"), (req, res) => {
-    if (!req.file) return res.status(400).json({ message: "No PDF uploaded" });
-  
-    const url = `/uploads/${req.file.filename}`;
-    res.status(200).json({ url });
-  });
-
-  const OpenAI = require("openai");
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-router.post("/match", async (req, res) => {
-  const { resume, jobDesc } = req.body;
-  if (!resume || !jobDesc) return res.status(400).json({ message: "Missing inputs" });
-
-  const prompt = `
-You are a helpful assistant that reads resumes and job descriptions.
-Compare the following resume and job description and return a short paragraph explaining which parts of the resume are strong matches for the job.
-
-Resume:
-${resume}
-
-Job Description:
-${jobDesc}
-
-Summary:
-`;
+  router.post("/generate-profile", async (req, res) => {
+  const { resumeText } = req.body;
+  if (!resumeText) return res.status(400).json({ message: "Missing resume text" });
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7
+    const openaiResponse = await openai.chat.completions.create({
+      model: "gpt-4o", // Use GPT-4o for longer outputs
+      temperature: 0.4,
+      messages: [
+        {
+          role: "system",
+          content: `You are a smart resume parser. Given a user's resume, return a complete and detailed JSON object that fits the following format: 
+{
+  name: string,
+  email: string,
+  highlights: [{label: string, category: string}],
+  pages: [
+    {id: string, name: string, blocks: [{id, type, content}]}
+  ],
+  activePageId: string
+}
+Use categories like Academic, Technical, Leadership, Extracurricular, Personal Development. Include full education, work experience, projects, leadership, and skills as structured blocks. Use 'text', 'link', 'code', 'contactsText', and 'multiBlock' types wherever possible.`
+        },
+        {
+          role: "user",
+          content: resumeText
+        }
+      ]
     });
 
-    const summary = completion.choices[0].message.content;
-    res.json({ summary });
+    const jsonResult = openaiResponse.choices?.[0]?.message?.content;
+
+    // You may want to validate/sanitize this output before saving
+    const parsed = JSON.parse(jsonResult);
+    res.json(parsed);
   } catch (err) {
-    console.error("OpenAI error:", err.message);
-    res.status(500).json({ message: "Failed to generate match summary" });
+    console.error("❌ GPT Error:", err.message);
+    res.status(500).json({ message: "Failed to generate profile" });
   }
 });
 
+const { default: ModelClient, isUnexpected } = require("@azure-rest/ai-inference");
+const { AzureKeyCredential } = require("@azure/core-auth");
+
+const token = process.env["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"]; // Make sure this is set in .env
+const endpoint = "https://models.github.ai/inference";
+const model = "openai/gpt-4.1";
+
+router.post("/generate-profile-from-resume", async (req, res) => {
+  const { resumeText } = req.body;
+
+  if (!resumeText) {
+    return res.status(400).json({ message: "Missing resume text" });
+  }
+
+  const client = ModelClient(endpoint, new AzureKeyCredential(token));
+
+  try {
+    const response = await client.path("/chat/completions").post({
+      body: {
+        messages: [
+          {
+            role: "system",
+            content: `You are a smart resume parser. Return a JSON object with these fields:
+{
+  name: string,
+  email: string,   // <- THIS MUST BE PRESENT
+  highlights: [{label: string, category: string}], // see categories below
+  pages: [...]
+}
+
+Allowed highlight categories are:
+- "Academic"
+- "Technical"
+- "Leadership"
+- "Extracurricular"
+- "Personal Development"
+DO NOT use categories like "Education" or "Research".`
+          },
+          { role: "user", content: resumeText }
+        ],
+        temperature: 0.4,
+        top_p: 1,
+        model: model
+      }
+    });
+
+    if (isUnexpected(response)) {
+      throw response.body.error;
+    }
+
+    const result = response.body.choices[0].message.content;
+
+    try {
+      const json = JSON.parse(result); // validate it's actual JSON
+      res.json(json);
+    } catch (err) {
+      console.error("⚠️ GPT response not valid JSON:", result);
+      res.status(500).json({ message: "Failed to parse GPT response", raw: result });
+    }
+
+  } catch (err) {
+    console.error("❌ Error calling Azure GPT:", err);
+    res.status(500).json({ message: "Azure GPT error", error: err });
+  }
+});
+
+// ✅ GET current user profile
+router.get("/me", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id || req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({
+      name: user.name,
+      email: user.email,
+      header: user.header,
+      highlights: user.highlights,
+      backgroundPhoto: user.backgroundPhoto,
+      pages: user.pages,
+      activePageId: user.activePageId
+    });
+  } catch (err) {
+    console.error("Error fetching /me:", err);
+    res.status(500).json({ message: "Server error fetching profile" });
+  }
+});
 
 module.exports = router;

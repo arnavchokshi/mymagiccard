@@ -1,7 +1,7 @@
 /* Header.css */
 
 .navbar {
-    margin-bottom: 20px;
+    margin-bottom: 0;
   }
   
   .navbar-brand {
@@ -21,7 +21,7 @@
   }
   
   .navbar-dark {
-    background-color: #003057 !important;
+    background-color: #000000 !important;
   }
   
   .navbar .container {
