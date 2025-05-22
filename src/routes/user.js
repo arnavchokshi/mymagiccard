@@ -291,8 +291,18 @@ DO NOT use categories like "Education" or "Research".`
 // ✅ GET current user profile
 router.get("/me", authenticateToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id || req.user._id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // Get user ID from the token payload
+    const userId = req.user.id || req.user._id;
+    
+    if (!userId) {
+      return res.status(401).json({ message: "Invalid authentication token" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.json({
       name: user.name,
       email: user.email,

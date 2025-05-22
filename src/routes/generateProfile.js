@@ -240,56 +240,41 @@ ${resumeText}
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error("❌ GitHub API Error:", error);
-      throw new Error(error.message || "Failed to generate profile");
+      const errorText = await response.text();
+      console.error("❌ GitHub API Error:", errorText);
+      return res.status(500).json({ 
+        message: "Failed to generate profile", 
+        error: "API authorization failed. Please try again later." 
+      });
     }
 
-    const data = await response.json();
-    const rawJson = data.choices?.[0]?.message?.content;
-    console.log("📝 Raw GPT output:\n", rawJson);
-
-    let parsed;
     try {
-      parsed = JSON.parse(rawJson);
+      const data = await response.json();
+      const rawJson = data.choices?.[0]?.message?.content;
+      console.log("📝 Raw GPT output:\n", rawJson);
+
+      if (!rawJson) {
+        return res.status(500).json({ 
+          message: "Failed to generate profile", 
+          error: "No content generated" 
+        });
+      }
+
+      // Parse and validate the JSON
+      const parsedJson = JSON.parse(rawJson);
+      res.json(parsedJson);
     } catch (err) {
-      console.error("❌ Failed to parse JSON:", rawJson);
-      return res.status(500).json({ message: "Invalid output format", raw: rawJson });
+      console.error("❌ Error parsing GPT output:", err);
+      res.status(500).json({ 
+        message: "Failed to parse generated profile", 
+        error: err.message 
+      });
     }
-
-    if (!Array.isArray(parsed.pages)) {
-      return res.status(400).json({ message: "Parsed response missing 'pages'", parsed });
-    }
-
-    const update = {
-      highlights: parsed.highlights || [],
-      pages: parsed.pages,
-      activePageId: parsed.activePageId || parsed.pages[0]?.id || "main"
-    };
-
-    const user = await User.findByIdAndUpdate(
-      new mongoose.Types.ObjectId(req.user._id),
-      { $set: update },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found for update" });
-    }
-
-    console.log("✅ Updated existing user:", user._id);
-
-    res.status(200).json({
-      message: "Profile updated successfully!",
-      userId: user._id,
-      previewUrl: `http://localhost:3000/user/${user._id}/edit`
-    });
-
   } catch (err) {
     console.error("❌ Error during profile generation:", err);
     res.status(500).json({ 
-      message: "Failed to generate profile",
-      error: err.message || "Unknown error"
+      message: "Failed to generate profile", 
+      error: err.message 
     });
   }
 });
