@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { authenticateToken } = require("../utils/authMiddleware");
 const multer = require("multer");
+const mongoose = require("mongoose");
 // Use disk storage for uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -62,6 +63,11 @@ router.get("/:id", async (req, res) => {
     // Special case for /me route - should never reach here because of middleware
     if (req.params.id === 'me') {
       return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    // Validate that the ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
     }
 
     const user = await User.findById(req.params.id);
@@ -142,7 +148,14 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
       update.backgroundPhoto = backgroundPhotoUrl;
     }
 
-    const user = await User.findById(req.user.id || req.user._id);
+    // Get user ID from the token payload
+    const userId = req.user.id;
+    
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(401).json({ message: "Invalid authentication token" });
+    }
+
+    const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // Update user fields
@@ -297,9 +310,9 @@ DO NOT use categories like "Education" or "Research".`
 router.get("/me", authenticateToken, async (req, res) => {
   try {
     // Get user ID from the token payload
-    const userId = req.user.id || req.user._id;
+    const userId = req.user.id;
     
-    if (!userId) {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(401).json({ message: "Invalid authentication token" });
     }
 
