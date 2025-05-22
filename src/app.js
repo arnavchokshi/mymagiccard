@@ -59,7 +59,8 @@ app.use("/api", generateRoute);
 app.use('/user', signupRoute);    // e.g. /user/register
 app.use('/auth', loginRoute);     // e.g. /auth/login
 app.use('/api', userRoute);       // includes /api/setup, /api/me, etc.
-app.use('/public', userRoute);    // handle public profile routes separately
+app.use('/api/me', userRoute);    // handle /me route first
+app.use('/public', userRoute);    // handle public profile routes
 
 // Configure static file serving for uploads
 app.use('/uploads', express.static(uploadsDir));
