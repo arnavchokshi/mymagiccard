@@ -187,7 +187,6 @@ ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
 2. CODE BLOCK GUIDELINES:
    - Each code block should demonstrate one of these animations:
-     a) 3D card flip with gradient borders
      b) Floating elements with particle effects
      c) Progressive reveal with scroll animations
      d) Interactive hover states with glowing effects
@@ -197,6 +196,12 @@ ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
    - Implement smooth transitions (0.3s - 0.6s)
    - Add subtle shadows and gradient effects
    - Include hover, focus, and active states
+   ⚠️ IMPORTANT: All code blocks must be valid JSON string literals:
+  - Escape **all** inner double quotes: use "\""
+  - Escape newlines as "\\n"
+  - Do not use backticks, HTML entities, or indentation
+  - The content must be a flat JSON-safe string
+
 
 3. CONTENT QUALITY:
    - All text blocks: Minimum 150 characters
