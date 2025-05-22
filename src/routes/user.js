@@ -59,6 +59,11 @@ router.post("/register", async (req, res) => {
 // ✅ PUBLIC PROFILE ROUTE
 router.get("/:id", async (req, res) => {
   try {
+    // Special case for /me route - should never reach here because of middleware
+    if (req.params.id === 'me') {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
     const user = await User.findById(req.params.id);
 
     if (!user) {
