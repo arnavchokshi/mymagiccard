@@ -81,6 +81,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// ✅ SETUP ROUTE
 router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async (req, res) => {
   try {
     console.log("🔥 req.body:", req.body);
@@ -102,15 +103,31 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     console.log("🔍 highlights (raw):", highlights);
     console.log("🔍 pages (raw):", pages);
 
-    const parsedPages = JSON.parse(pages);
+    // Safely parse JSON data with error handling
+    let parsedHighlights;
+    let parsedPages;
+
+    try {
+      parsedHighlights = typeof highlights === 'string' ? JSON.parse(highlights) : highlights;
+    } catch (err) {
+      console.error("Failed to parse highlights:", err);
+      return res.status(400).json({ message: "Invalid highlights format" });
+    }
+
+    try {
+      parsedPages = typeof pages === 'string' ? JSON.parse(pages) : pages;
+    } catch (err) {
+      console.error("Failed to parse pages:", err);
+      return res.status(400).json({ message: "Invalid pages format" });
+    }
 
     const update = {
       name,
       email,
       header,
-      highlights: JSON.parse(highlights),
-      pages: parsedPages.pages,
-      activePageId: parsedPages.activePageId
+      highlights: parsedHighlights,
+      pages: parsedPages.pages || parsedPages,
+      activePageId: parsedPages.activePageId || activePageId
     };
 
     // Only set backgroundPhoto if file and filename are defined
@@ -123,13 +140,8 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     const user = await User.findById(req.user.id || req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.name = update.name;
-    user.email = update.email;
-    user.header = update.header;
-    user.highlights = update.highlights;
-    user.pages = update.pages;
-    user.activePageId = update.activePageId;
-    if (update.backgroundPhoto) user.backgroundPhoto = update.backgroundPhoto;
+    // Update user fields
+    Object.assign(user, update);
 
     await user.save();
 
@@ -147,7 +159,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     });
   } catch (err) {
     console.error("❌ Profile update error:", err);
-    res.status(500).json({ message: "Server error during profile update" });
+    res.status(500).json({ message: "Server error during profile update", error: err.message });
   }
 });
 
@@ -257,31 +269,22 @@ Allowed highlight categories are:
 - "Personal Development"
 DO NOT use categories like "Education" or "Research".`
           },
-          { role: "user", content: resumeText }
-        ],
-        temperature: 0.4,
-        top_p: 1,
-        model: model
+          {
+            role: "user",
+            content: resumeText
+          }
+        ]
       }
     });
 
-    if (isUnexpected(response)) {
-      throw response.body.error;
-    }
+    const jsonResult = response.choices?.[0]?.message?.content;
 
-    const result = response.body.choices[0].message.content;
-
-    try {
-      const json = JSON.parse(result); // validate it's actual JSON
-      res.json(json);
-    } catch (err) {
-      console.error("⚠️ GPT response not valid JSON:", result);
-      res.status(500).json({ message: "Failed to parse GPT response", raw: result });
-    }
-
+    // You may want to validate/sanitize this output before saving
+    const parsed = JSON.parse(jsonResult);
+    res.json(parsed);
   } catch (err) {
-    console.error("❌ Error calling Azure GPT:", err);
-    res.status(500).json({ message: "Azure GPT error", error: err });
+    console.error("❌ GPT Error:", err.message);
+    res.status(500).json({ message: "Failed to generate profile" });
   }
 });
 
