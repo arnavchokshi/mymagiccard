@@ -267,7 +267,13 @@ ${resumeText}
 
       // Parse and validate the JSON
       const parsedJson = JSON.parse(rawJson);
-      res.json(parsedJson);
+
+      const newUser = new User(parsedJson);
+      await newUser.save();
+      console.log("✅ User saved with ID:", newUser._id);
+
+      res.json({ userId: newUser._id });
+
     } catch (err) {
       console.error("❌ Error parsing GPT output:", err);
       res.status(500).json({ 
