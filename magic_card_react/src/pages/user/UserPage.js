@@ -144,6 +144,12 @@ const UserPage = () => {
     if (id) fetchProfile();
   }, [id]);
 
+  useEffect(() => {
+    if (userData.themeColor) {
+      document.documentElement.style.setProperty('--primary-neon', userData.themeColor);
+    }
+  }, [userData.themeColor]);
+
   const renderBlock = (block, index) => {
     const safeBlock = { ...block, ...(blocksState[block.id] || {}) };
   

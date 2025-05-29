@@ -55,7 +55,7 @@ const EditProfile = () => {
     email: "",
     highlights: [],
     backgroundPhoto: "",
-    header: "Hello, my name is Your Name! Contact me at your.email@example.com"
+    header: ""  // Remove default header text
   });
 
   const [typedText, setTypedText] = useState("");
@@ -84,7 +84,9 @@ const EditProfile = () => {
 
   // Update typed text when header changes
   useEffect(() => {
-    setTypedText(formData.header || `Hello, my name is ${formData.name || "Your Name"}! Contact me at ${formData.email || "your.email@example.com"}`);
+    if (formData.name && formData.email) {
+      setTypedText(formData.header || `Hello, my name is ${formData.name}! Contact me at ${formData.email}`);
+    }
   }, [formData.header, formData.name, formData.email]);
 
   // Set animation as complete after timeout
@@ -119,6 +121,7 @@ const EditProfile = () => {
           return;
         }
 
+        console.log("Fetching profile with token:", token);
         const res = await fetch(API_URLS.profile, {
           method: 'GET',
           headers: { 
@@ -130,24 +133,38 @@ const EditProfile = () => {
 
         if (res.ok) {
           const data = await res.json();
+          console.log("Profile data received:", data);
+          
+          // Ensure we have the data before setting it
+          if (!data.name || !data.email) {
+            console.error("Missing name or email in profile data:", data);
+          }
+
           setFormData({
             name: data.name || "",
             email: data.email || "",
             highlights: Array.isArray(data.highlights) ? data.highlights : [],
             backgroundPhoto: data.backgroundPhoto || "",
-            header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
-            themeColor: data.themeColor || '#b3a369', // load from backend if available
+            header: data.header || `Hello, my name is ${data.name}! Contact me at ${data.email}`,
+            themeColor: data.themeColor || '#b3a369',
           });
+
+          console.log("Form data after setting:", {
+            name: data.name,
+            email: data.email,
+            header: data.header
+          });
+
           if (Array.isArray(data.pages)) {
             setPages(data.pages);
             setActivePageId(data.activePageId || "main");
           }
           setShowOnboarding(true);
         } else {
-          console.log("Profile fetch failed, showing onboarding");
-          // If profile fetch fails, still show onboarding
+          console.error("Profile fetch failed with status:", res.status);
+          const errorData = await res.json();
+          console.error("Error data:", errorData);
           setShowOnboarding(true);
-          // Set default empty state
           setPages([{ id: "main", name: "Main", blocks: [] }]);
           setActivePageId("main");
         }
@@ -639,11 +656,11 @@ const EditProfile = () => {
             <div className="profile-header-overlay">
               <div className="fancy-header-center" ref={headerRef}>
                 <h1 className="fancy-header-name">
-                  {formData.name || "Your Name"}
+                  {formData.name}
                 </h1>
                 <div className="fancy-header-subtitle">
                   <span className="typewriter-text">
-                    {formData.header || "Currently @ ..."}
+                    {formData.header || `Hello, my name is ${formData.name}! Contact me at ${formData.email}`}
                   </span>
                 </div>
                 <div className="down-arrow-anim">
