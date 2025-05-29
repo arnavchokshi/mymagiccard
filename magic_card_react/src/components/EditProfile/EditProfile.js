@@ -100,8 +100,9 @@ const EditProfile = () => {
 
   // Update the CSS variable and localStorage when themeColor changes
   useEffect(() => {
-    document.documentElement.style.setProperty('--primary-neon', themeColor);
-    localStorage.setItem('themeColor', themeColor);
+    if (themeColor) {
+      document.documentElement.style.setProperty('--primary-neon', themeColor);
+    }
   }, [themeColor]);
 
   // Load themeColor from user profile if available
@@ -148,6 +149,8 @@ const EditProfile = () => {
             header: data.header || `Hello, my name is ${data.name}! Contact me at ${data.email}`,
             themeColor: data.themeColor || '#b3a369',
           });
+
+          setThemeColor(data.themeColor || '#b3a369');
 
           console.log("Form data after setting:", {
             name: data.name,

@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const { authenticateToken } = require("../utils/authMiddleware");
 const multer = require("multer");
 const mongoose = require("mongoose");
+const cors = require('cors');
 // Use disk storage for uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

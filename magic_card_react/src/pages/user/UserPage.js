@@ -127,7 +127,8 @@ const UserPage = () => {
           email: data.email || "",
           highlights: Array.isArray(data.highlights) ? data.highlights : [],
           backgroundPhoto: data.backgroundPhoto || "",
-          header: data.header || `Hello, my name is ${data.name || "Your Name"}! Contact me at ${data.email || "your.email@example.com"}`
+          header: data.header || `Hello, my name is ${data.name || "Your Name"}! Contact me at ${data.email || "your.email@example.com"}`,
+          themeColor: data.themeColor || '#b3a369',
         });
 
         if (Array.isArray(data.pages)) {
