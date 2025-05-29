@@ -22,13 +22,13 @@ const createAdminAccount = require("./scripts/admin");
 require("dotenv").config();
 const imageUploadRoute = require("./routes/imageUpload");
 
-
+const allowedOrigins = [
+  'https://magicframes.onrender.com',
+  'http://localhost:3000'
+];
 
 const app = express();
 const PORT = process.env.PORT || 2000;
-
-
-
 
 // Connect to MongoDB
 mongoose.connect('mongodb+srv://chokshiarnav:CnR7UHD6hGFxlSw9@majiccluster.edhrvjd.mongodb.net/majic_db', {
@@ -39,7 +39,18 @@ mongoose.connect('mongodb+srv://chokshiarnav:CnR7UHD6hGFxlSw9@majiccluster.edhrv
   .catch((error) => console.error('❌ MongoDB connection error:', error));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
 app.use("/api", imageUploadRoute);
