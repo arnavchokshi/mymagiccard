@@ -46,8 +46,20 @@ const Signup = () => {
 
   return (
     <div className='center-form'>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: -1,
+          background: "url('/6436961_3312580.jpg') no-repeat center center fixed",
+          backgroundSize: 'cover'
+        }}
+      />
       <Form onSubmit={handleSubmit}>
-        <h1>Signup</h1>
+        <h1 className="gradient-heading">Signup</h1>
 
         <Form.Group controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>
