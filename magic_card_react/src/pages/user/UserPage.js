@@ -337,11 +337,6 @@ const UserPage = () => {
             </button>
           ))}
           
-          {id && (
-            <Link to={`/user/${id}/edit`} className="user-edit-button">
-              Edit Profile
-            </Link>
-          )}
         </div>
         
         {/* Content blocks */}

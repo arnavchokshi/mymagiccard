@@ -614,13 +614,13 @@ body {
 
 .divider-line {
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(179, 163, 105, 0.5), transparent);
+  background: linear-gradient(to right, transparent, var(--primary-neon, #b3a369) 0.5, transparent);
   margin: 30px 0;
 }
 
 .divider-line-only {
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(179, 163, 105, 0.5), transparent);
+  background: linear-gradient(to right, transparent, var(--primary-neon, #b3a369) 0.5, transparent);
   margin: 40px 0;
   width: 100%;
 }
@@ -949,7 +949,7 @@ img {
   font-size: 3.2rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  background: linear-gradient(90deg, #b3a369, #6e4c1b, #b3a369 80%);
+  background: linear-gradient(90deg, var(--primary-neon, #b3a369), #e0e0e070, var(--primary-neon, #b3a369) 80%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
@@ -981,7 +981,7 @@ img {
 .fancy-header-subtitle {
   font-family: 'Playfair Display', serif;
   font-size: 1.25rem;
-  color: #6e4c1b;
+  color: var(--primary-neon, #b3a369);
   margin-bottom: 32px;
   min-height: 1.5em;
   letter-spacing: 0.01em;
@@ -1013,7 +1013,7 @@ img {
   display: inline-block;
   overflow: hidden;
   white-space: nowrap;
-  border-right: 2px solid #b3a369;
+  border-right: 2px solid var(--primary-neon, #b3a369);
   animation: typewriter 2.5s steps(30, end) 0.3s 1 normal both, blink-caret 0.75s step-end infinite;
 }
 @keyframes typewriter {
@@ -1022,7 +1022,7 @@ img {
 }
 @keyframes blink-caret {
   from, to { border-color: transparent; }
-  50% { border-color: #b3a369; }
+  50% { border-color: var(--primary-neon, #b3a369); }
 }
 
 .down-arrow-anim {
