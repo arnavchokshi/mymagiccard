@@ -40,7 +40,7 @@
 .divider-line-gold {
   height: 2px;
   width: 100%;
-  background: linear-gradient(to right, #b3a369, #e5c27b);
+  background: linear-gradient(to right, var(--primary-neon, #b3a369), var(--primary-neon, #e5c27b));
   border: none;
   margin: 0 0 16px 0;
 }
@@ -81,7 +81,7 @@
 
 .text-block-divider {
   border: none;
-  border-top: 2px solid #f3e7c3;
+  border-top: 2px solid var(--primary-neon, #f3e7c3);
   margin: 18px 0 22px 0;
   width: 100%;
   opacity: 0.7;

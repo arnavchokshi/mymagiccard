@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_URLS } from "../../config";
-
+import OnboardingCarousel from "./OnboardingCarousel";
 
 // Blocks
 import TextBlock from "../blocks/TextBlock";
@@ -74,6 +74,10 @@ const EditProfile = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNameInBar, setShowNameInBar] = useState(false);
   const headerRef = useRef(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [themeColor, setThemeColor] = useState(
+    localStorage.getItem('themeColor') || '#b3a369' // default gold
+  );
 
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
@@ -92,57 +96,75 @@ const EditProfile = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Update the CSS variable and localStorage when themeColor changes
+  useEffect(() => {
+    document.documentElement.style.setProperty('--primary-neon', themeColor);
+    localStorage.setItem('themeColor', themeColor);
+  }, [themeColor]);
+
+  // Load themeColor from user profile if available
+  useEffect(() => {
+    if (formData && formData.themeColor) {
+      setThemeColor(formData.themeColor);
+    }
+  }, [formData.themeColor]);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (token) {
-          const res = await fetch(API_URLS.profile, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setFormData({
-              name: data.name || "",
-              email: data.email || "",
-              highlights: Array.isArray(data.highlights) ? data.highlights : [],
-              backgroundPhoto: data.backgroundPhoto || "",
-              header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com"
-            });
-            if (Array.isArray(data.pages)) {
-              setPages(data.pages);
-              setActivePageId(data.activePageId || "main");
-            }
-            return;
-          }
+        if (!token) {
+          console.log("No token found, showing onboarding");
+          setShowOnboarding(true);
+          return;
         }
-        // fallback to public fetch if no token or /api/me fails
-        const res = await fetch(API_URLS.public(id));
-        const data = await res.json();
-        setFormData({
-          name: data.name || "",
-          email: data.email || "",
-          highlights: Array.isArray(data.highlights) ? data.highlights : [],
-          backgroundPhoto: data.backgroundPhoto || "",
-          header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com"
+
+        const res = await fetch(API_URLS.profile, {
+          method: 'GET',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         });
-        if (Array.isArray(data.pages)) {
-          setPages(data.pages);
-          setActivePageId(data.activePageId || "main");
+
+        if (res.ok) {
+          const data = await res.json();
+          setFormData({
+            name: data.name || "",
+            email: data.email || "",
+            highlights: Array.isArray(data.highlights) ? data.highlights : [],
+            backgroundPhoto: data.backgroundPhoto || "",
+            header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
+            themeColor: data.themeColor || '#b3a369', // load from backend if available
+          });
+          if (Array.isArray(data.pages)) {
+            setPages(data.pages);
+            setActivePageId(data.activePageId || "main");
+          }
+          setShowOnboarding(true);
+        } else {
+          console.log("Profile fetch failed, showing onboarding");
+          // If profile fetch fails, still show onboarding
+          setShowOnboarding(true);
+          // Set default empty state
+          setPages([{ id: "main", name: "Main", blocks: [] }]);
+          setActivePageId("main");
         }
       } catch (err) {
         console.error("Failed to load profile:", err);
         setPages([{ id: "main", name: "Main", blocks: [] }]);
         setActivePageId("main");
+        setShowOnboarding(true);
       }
     };
 
-    if (id) fetchProfile();
+    fetchProfile();
 
     setTimeout(() => {
       setSidebarActive(true);
     }, 100);
-  }, [id]);
+  }, []);
 
   // Toggle sidebar for mobile
   const toggleSidebar = () => {
@@ -422,6 +444,9 @@ const EditProfile = () => {
         form.append("backgroundPhotoUrl", formData.backgroundPhoto);
       }
 
+      // Save themeColor to backend
+      form.append("themeColor", themeColor);
+
       const res = await fetch(API_URLS.setup, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -473,6 +498,9 @@ const EditProfile = () => {
 
   return (
     <>
+      {showOnboarding && (
+        <OnboardingCarousel onClose={() => setShowOnboarding(false)} />
+      )}
       <div className="fixed-page-tabs-bar">
         <label htmlFor="background-upload" className="change-background-btn" style={{ margin: '0 24px 0 0', position: 'static' }}>
           Change Background
@@ -496,6 +524,14 @@ const EditProfile = () => {
         >
           Change Name & Header
         </button>
+        {/* Theme color picker */}
+        <input
+          type="color"
+          value={themeColor}
+          onChange={e => setThemeColor(e.target.value)}
+          style={{ marginLeft: 16, width: 40, height: 40, border: 'none', background: 'none', cursor: 'pointer' }}
+          title="Pick your theme color"
+        />
         <input
           type="file"
           accept="image/*"
@@ -527,6 +563,30 @@ const EditProfile = () => {
         <aside className={`sidebar ${sidebarActive ? "active" : ""} ${isSidebarOpen ? "open" : ""}`}>
           <div className="sidebar-header">
             <h2>Editor Tools</h2>
+          </div>
+
+          <div className="sidebar-category">
+            <div className="sidebar-category-title">Quick Actions</div>
+            <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
+              Save Profile
+            </button>
+
+            <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
+              View Public Profile
+            </Link>
+
+            <Link to="/generate" className="block-option enhance-ai-button" style={{ marginTop: 12 }}>
+              <span className="enhance-ai-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21M12 3V21M21 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M19.5 12C19.5 16.1421 16.1421 19.5 12 19.5C7.85786 19.5 4.5 16.1421 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                </svg>
+              </span>
+              <span>Enhance with AI</span>
+              <span className="enhance-ai-glow"></span>
+            </Link>
           </div>
 
           {Object.keys(blockCategories).map((category) => (
@@ -565,30 +625,6 @@ const EditProfile = () => {
               </div>
             </div>
           ))}
-
-          <div className="sidebar-category">
-            <div className="sidebar-category-title">Settings</div>
-            <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
-              Save Profile
-            </button>
-
-            <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
-              View Public Profile
-            </Link>
-
-            <Link to="/generate" className="block-option enhance-ai-button" style={{ marginTop: 12 }}>
-              <span className="enhance-ai-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21M12 3V21M21 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M19.5 12C19.5 16.1421 16.1421 19.5 12 19.5C7.85786 19.5 4.5 16.1421 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
-                  <circle cx="12" cy="12" r="1" fill="currentColor"/>
-                </svg>
-              </span>
-              <span>Enhance with AI</span>
-              <span className="enhance-ai-glow"></span>
-            </Link>
-          </div>
         </aside>
 
         <main className="profile-editor">

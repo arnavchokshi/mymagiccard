@@ -29,7 +29,8 @@ const UserSchema = new mongoose.Schema({
   header: { type: String },
   highlights: [HighlightSchema],
   pages: [PageSchema],
-  activePageId: { type: String }
+  activePageId: { type: String },
+  themeColor: { type: String, default: '#b3a369' }
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", UserSchema);
