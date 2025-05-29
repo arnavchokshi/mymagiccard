@@ -1,5 +1,5 @@
 import React, { useState} from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import "./Login.css"
 import { Button, Form } from 'react-bootstrap';
 
@@ -58,8 +58,20 @@ export const Login = () => {
 
   return (
     <div className='center-form'>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: -1,
+          background: "url('/6436961_3312580.jpg') no-repeat center center fixed",
+          backgroundSize: 'cover'
+        }}
+      />
       <Form onSubmit={handleSubmit}>
-        <h1>Login</h1>
+        <h1 className="gradient-heading">Login</h1>
 
         <Form.Group controlId="formBasicEmail">
           <Form.Label>Email address</Form.Label>
@@ -87,6 +99,10 @@ export const Login = () => {
         <Button variant="dark" type="submit" className="w-100">
           Login
         </Button>
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <span>Don't have an account? </span>
+          <Link to="/register">Sign up</Link>
+        </div>
       </Form>
     </div>
   )

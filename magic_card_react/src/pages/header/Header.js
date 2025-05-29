@@ -15,8 +15,8 @@ const Header = () => {
   return (
     <Navbar bg={token ? "dark" : "dark"} variant="dark">
       <Container>
-        <Navbar.Brand as={Link} to="">
-          {token ? "Logged-In" : "Not-LoggedIn"}
+        <Navbar.Brand as={Link} to="/" className="gradient-heading" style={{ fontWeight: 700, fontSize: '2rem', letterSpacing: '2px' }}>
+          MagicFrames
         </Navbar.Brand>
         <Nav className="ml-auto">
           {token ? (

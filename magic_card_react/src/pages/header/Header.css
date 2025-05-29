@@ -2,12 +2,19 @@
 
 .navbar {
     margin-bottom: 0;
+    min-height: 40px;
+    height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
   }
   
   .navbar-brand {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: #fff !important;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 40px;
   }
   
   .nav-link {
@@ -25,13 +32,27 @@
   }
   
   .navbar .container {
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 15px;
+    padding-right: 15px;
+    min-height: 40px;
+    height: 40px;
   }
   
   .navbar-nav {
     display: flex;
     justify-content: flex-end;
     width: 100%;
+    align-items: center;
+    min-height: 40px;
+    height: 40px;
+  }
+  
+  .gradient-heading {
+    background: linear-gradient(90deg, #4facfe 0%, #8f5eff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
   }
   

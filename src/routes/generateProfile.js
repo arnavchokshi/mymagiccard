@@ -155,6 +155,8 @@ The structure should look like:
 STYLE & COMPLETENESS INSTRUCTIONS:
 ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
+Use at most 4 highlights with max 15 characters
+
 1. PAGE STRUCTURE:
    - About Page (Required):
      • Title block: Professional introduction
@@ -186,12 +188,12 @@ ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
      • MultiBlock: Skills and technologies used
 
 2. CODE BLOCK GUIDELINES:
-   - Each code block should demonstrate one of these animations:
-     b) Floating elements with particle effects
-     c) Progressive reveal with scroll animations
-     d) Interactive hover states with glowing effects
-     e) Morphing shapes with SVG animations
-   - Include comments explaining the animation
+   - Each code block should demonstrate  these animations:
+     a) Floating elements with particle effects
+     b) Progressive reveal with scroll animations
+     c) Interactive hover states with glowing effects
+     d) Bonus points if it can use Morphing shapes with SVG animations
+     e) Graph element
    - Use CSS variables for easy customization
    - Implement smooth transitions (0.3s - 0.6s)
    - Add subtle shadows and gradient effects
@@ -204,7 +206,7 @@ ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
 
 3. CONTENT QUALITY:
-   - All text blocks: Minimum 150 characters
+   - All text blocks: between 150-250 characters
    - Use bullet points for better readability
    - Include metrics and specific examples
    - Maintain professional tone
