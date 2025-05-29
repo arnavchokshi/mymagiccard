@@ -28,10 +28,7 @@ function authenticateToken(req, res, next) {
         return res.status(403).json({ message: "Forbidden: Invalid Token Structure" });
       }
 
-      req.user = {
-        id: decoded._id,
-        email: decoded.email
-      };
+      req.user = decoded;
       next();
     });
 }
