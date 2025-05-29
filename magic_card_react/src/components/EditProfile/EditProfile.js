@@ -192,20 +192,21 @@ const EditProfile = () => {
   const handleTypedTextChange = (e) => {
     const newText = e.target.value;
     setTypedText(newText);
-    
-    // Update the header in formData
-    setFormData(prev => ({
-      ...prev,
-      header: newText
-    }));
-    
-    // Also try to extract name/email if it matches the pattern
+
+    // Only update name/email if both are present in the header pattern
     const match = newText.match(/^Hello, my name is (.*?)! Contact me at (.*?)$/);
-    if (match) {
+    if (match && match[1] && match[2]) {
       setFormData(prev => ({
         ...prev,
         name: match[1].trim(),
-        email: match[2].trim()
+        email: match[2].trim(),
+        header: newText
+      }));
+    } else {
+      // Only update the header, do NOT touch name/email
+      setFormData(prev => ({
+        ...prev,
+        header: newText
       }));
     }
   };
@@ -449,7 +450,6 @@ const EditProfile = () => {
 
       const form = new FormData();
       form.append("name", formData.name);
-      form.append("email", formData.email);
       form.append("header", formData.header);
       form.append("highlights", JSON.stringify(formData.highlights));
       form.append("pages", JSON.stringify({ pages, activePageId }));
@@ -707,6 +707,9 @@ const EditProfile = () => {
               }}
             />
           </div>
+          </div>
+          <div className="profile-email-readonly" style={{margin: '16px 0', fontWeight: 'bold'}}>
+            Email: {formData.email}
           </div>
         </main>
       </div>
