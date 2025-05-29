@@ -49,7 +49,7 @@ router.post("/register", async (req, res) => {
 
     await newUser.save();
 
-    const token = jwt.sign({ id: newUser._id, email: newUser.email }, secretkey, { expiresIn: "2h" });
+    const token = jwt.sign({ _id: newUser._id, email: newUser.email }, secretkey, { expiresIn: "2h" });
     res.status(201).json({ message: "User registered successfully.", token });
 
   } catch (err) {
@@ -151,7 +151,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     }
 
     // Get user ID from the token payload
-    const userId = req.user.id;
+    const userId = req.user._id;
     
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(401).json({ message: "Invalid authentication token" });
@@ -313,7 +313,7 @@ DO NOT use categories like "Education" or "Research".`
 router.get("/me", authenticateToken, async (req, res) => {
   try {
     // Get user ID from the token payload
-    const userId = req.user.id;
+    const userId = req.user._id;
     
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(401).json({ message: "Invalid authentication token" });
