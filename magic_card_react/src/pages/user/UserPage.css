@@ -12,28 +12,6 @@
   flex-direction: column;
 }
 
-.fancy-header-name {
-  font-family: 'Playfair Display', serif;
-  font-size: 3.2rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  background: linear-gradient(90deg, var(--user-theme-color, #b3a369), var(--user-theme-color, #b3a369), var(--user-theme-color, #b3a369) 80%);
-  background-size: 200% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-swipe 3.5s linear infinite;
-  margin: 0 0 18px 0;
-  line-height: 1.1;
-  transition: font-size 0.3s;
-  position: relative;
-  z-index: 2;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 /* Header with typing animation */
 .user-page-header {
   position: fixed;
@@ -80,9 +58,7 @@
   transition: all 0.3s ease;
   position: relative;
   z-index: 2;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   padding: 20px 30px;
   display: inline-block;
 }
