@@ -56,7 +56,8 @@ const EditProfile = () => {
     email: "",
     highlights: [],
     backgroundPhoto: "",
-    header: "Hello, my name is Your Name! Contact me at your.email@example.com"
+    header: "Hello, my name is Your Name! Contact me at your.email@example.com",
+    themeColor: "#b3a369"
   });
 
   const [typedText, setTypedText] = useState("");
@@ -110,7 +111,8 @@ const EditProfile = () => {
               email: data.email || "",
               highlights: Array.isArray(data.highlights) ? data.highlights : [],
               backgroundPhoto: data.backgroundPhoto || "",
-              header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com"
+              header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
+              themeColor: data.themeColor || "#b3a369"
             });
             if (Array.isArray(data.pages)) {
               setPages(data.pages);
@@ -128,7 +130,8 @@ const EditProfile = () => {
           email: data.email || "",
           highlights: Array.isArray(data.highlights) ? data.highlights : [],
           backgroundPhoto: data.backgroundPhoto || "",
-          header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com"
+          header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
+          themeColor: data.themeColor || "#b3a369"
         });
         if (Array.isArray(data.pages)) {
           setPages(data.pages);
@@ -420,6 +423,7 @@ const EditProfile = () => {
       form.append("highlights", JSON.stringify(formData.highlights));
       form.append("pages", JSON.stringify({ pages, activePageId }));
       form.append("blocksList", JSON.stringify(blocksList));
+      form.append("themeColor", formData.themeColor);
 
       if (formData.backgroundPhoto instanceof File) {
         form.append("backgroundPhoto", formData.backgroundPhoto);
@@ -556,6 +560,17 @@ const EditProfile = () => {
               <span>Enhance with AI</span>
               <span className="enhance-ai-glow"></span>
             </Link>
+
+            <div className="theme-color-picker" style={{ marginTop: "20px" }}>
+              <label htmlFor="theme-color">Theme Color</label>
+              <input
+                type="color"
+                id="theme-color"
+                value={formData.themeColor}
+                onChange={(e) => setFormData(prev => ({ ...prev, themeColor: e.target.value }))}
+                style={{ width: "100%", height: "40px", marginTop: "8px" }}
+              />
+            </div>
           </div>
 
           {/* Block categories below */}

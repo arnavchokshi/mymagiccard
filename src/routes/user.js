@@ -6,19 +6,56 @@ const bcrypt = require("bcryptjs");
 const { authenticateToken } = require("../utils/authMiddleware");
 const multer = require("multer");
 const mongoose = require("mongoose");
-// Use disk storage for uploads
+const path = require("path");
+const fs = require("fs");
+const os = require("os");
+const ogs = require("open-graph-scraper");
+
+// Define uploads directory based on environment
+const uploadsDir = process.env.NODE_ENV === 'production'
+  ? '/opt/render/project/src/uploads'  // Render.com persistent disk path
+  : path.join(__dirname, '..', 'uploads'); // Local development path
+
+// Ensure uploads directory exists
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('✅ Created uploads directory at:', uploadsDir);
+  }
+} catch (err) {
+  console.error('❌ Error creating uploads directory:', err);
+  // Fallback to a temporary directory if the main one fails
+  const tempUploadsDir = path.join(os.tmpdir(), 'magic_card_uploads');
+  if (!fs.existsSync(tempUploadsDir)) {
+    fs.mkdirSync(tempUploadsDir, { recursive: true });
+  }
+  console.log('⚠️ Using temporary uploads directory:', tempUploadsDir);
+}
+
+// Use disk storage for uploads with error handling
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");
+    cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + '-' + file.originalname);
   }
 });
-const upload = multer({ storage });
-const ogs = require("open-graph-scraper");
-const path = require("path");
+
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    // Accept images only
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  }
+});
 
 // Secret key (ideally store in .env)
 const { secretkey } = require("../configuration/jwtConfig");
@@ -83,7 +120,8 @@ router.get("/:id", async (req, res) => {
       highlights: user.highlights,
       backgroundPhoto: user.backgroundPhoto,
       pages: user.pages,
-      activePageId: user.activePageId
+      activePageId: user.activePageId,
+      themeColor: user.themeColor
     });
     
   } catch (err) {
@@ -139,7 +177,8 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
       header,
       highlights: parsedHighlights,
       pages: parsedPages.pages || parsedPages,
-      activePageId: parsedPages.activePageId || activePageId
+      activePageId: parsedPages.activePageId || activePageId,
+      themeColor: themeColor || '#b3a369'
     };
 
     // Only set backgroundPhoto if file and filename are defined
@@ -173,7 +212,8 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
         highlights: user.highlights,
         backgroundPhoto: user.backgroundPhoto,
         pages: user.pages,
-        activePageId: user.activePageId
+        activePageId: user.activePageId,
+        themeColor: user.themeColor
       }
     });
   } catch (err) {

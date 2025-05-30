@@ -4,15 +4,27 @@ const mongoose = require('mongoose');
 const cors = require("cors");
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 // Define uploads directory based on environment
 const uploadsDir = process.env.NODE_ENV === 'production'
   ? '/opt/render/project/src/uploads'  // Render.com persistent disk path
   : path.join(__dirname, 'uploads'); // Local development path
 
-// Ensure uploads directory exists
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// Ensure uploads directory exists with proper error handling
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('✅ Created uploads directory at:', uploadsDir);
+  }
+} catch (err) {
+  console.error('❌ Error creating uploads directory:', err);
+  // Fallback to a temporary directory if the main one fails
+  const tempUploadsDir = path.join(os.tmpdir(), 'magic_card_uploads');
+  if (!fs.existsSync(tempUploadsDir)) {
+    fs.mkdirSync(tempUploadsDir, { recursive: true });
+  }
+  console.log('⚠️ Using temporary uploads directory:', tempUploadsDir);
 }
 
 const signupRoute = require('./routes/signup');

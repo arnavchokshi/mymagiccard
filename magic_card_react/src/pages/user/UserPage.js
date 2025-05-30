@@ -38,7 +38,8 @@ const UserPage = () => {
     email: "",
     highlights: [],
     backgroundPhoto: "",
-    header: "Hello, my name is Your Name! Contact me at your.email@example.com"
+    header: "Hello, my name is Your Name! Contact me at your.email@example.com",
+    themeColor: "#b3a369"
   });
   
   const [pages, setPages] = useState([{ id: "main", name: "Main", blocks: [] }]);
@@ -127,7 +128,8 @@ const UserPage = () => {
           email: data.email || "",
           highlights: Array.isArray(data.highlights) ? data.highlights : [],
           backgroundPhoto: data.backgroundPhoto || "",
-          header: data.header || `Hello, my name is ${data.name || "Your Name"}! Contact me at ${data.email || "your.email@example.com"}`
+          header: data.header || `Hello, my name is ${data.name || "Your Name"}! Contact me at ${data.email || "your.email@example.com"}`,
+          themeColor: data.themeColor || "#b3a369"
         });
 
         if (Array.isArray(data.pages)) {
@@ -269,7 +271,7 @@ const UserPage = () => {
   const backgroundImage = userData.backgroundPhoto || '/defaultBackground.jpg';
 
   return (
-    <div className="user-page-viewer">
+    <div className="user-page-viewer" style={{ "--primary-neon": userData.themeColor }}>
       {/* Background image with reduced opacity */}
       <div 
         className="user-page-background" 
@@ -289,7 +291,7 @@ const UserPage = () => {
       {/* Centered header with intro text */}
       <div className="user-page-header">
         <div className="user-header-text-center">
-          <div className="user-header-name">
+          <div className="user-header-name" style={{ background: `linear-gradient(90deg, ${userData.themeColor}, ${adjustColor(userData.themeColor, -20)}, ${userData.themeColor} 80%)` }}>
             {userData.name || "Your Name"}
           </div>
           <div 
@@ -298,7 +300,8 @@ const UserPage = () => {
             style={{
               animation: !isTypingAnimationDone ? 
                 `typing 3s steps(${typedText.length}, end) forwards, blink-caret 0.75s step-end infinite` : 
-                'blink-caret 0.75s step-end infinite'
+                'blink-caret 0.75s step-end infinite',
+              color: userData.themeColor
             }}
           >
             {typedText}
@@ -318,6 +321,7 @@ const UserPage = () => {
               <div
                 key={index}
                 className={`highlight-badge ${getCategoryClass(highlight.category)}`}
+                style={{ borderColor: userData.themeColor }}
               >
                 <span className="highlight-label">{highlight.label}</span>
               </div>
@@ -332,13 +336,17 @@ const UserPage = () => {
               key={page.id}
               onClick={() => setActivePageId(page.id)}
               className={`user-nav-tab ${activePageId === page.id ? 'active' : ''}`}
+              style={{
+                backgroundColor: activePageId === page.id ? `${userData.themeColor}40` : 'transparent',
+                borderColor: activePageId === page.id ? userData.themeColor : 'transparent'
+              }}
             >
               {page.name}
             </button>
           ))}
           
           {id && (
-            <Link to={`/user/${id}/edit`} className="user-edit-button">
+            <Link to={`/user/${id}/edit`} className="user-edit-button" style={{ background: `linear-gradient(135deg, ${userData.themeColor}, ${adjustColor(userData.themeColor, -20)})` }}>
               Edit Profile
             </Link>
           )}
@@ -356,5 +364,10 @@ const UserPage = () => {
     </div>
   );
 };
+
+// Helper function to adjust color brightness
+function adjustColor(color, amount) {
+  return '#' + color.replace(/^#/, '').replace(/../g, color => ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+}
 
 export default UserPage;

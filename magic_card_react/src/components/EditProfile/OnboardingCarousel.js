@@ -57,7 +57,7 @@ const OnboardingCarousel = ({ show, onClose }) => {
             <p>Personalize your profile by changing the background and header in the top left corner.</p>
           </div>
           <div className="tutorial-step">
-            <span className="step-number">4</span>
+            <span className="step-number">5</span>
             <p>Save, enhance with AI, and share your public profile using the buttons on the left.</p>
           </div>
         </div>
