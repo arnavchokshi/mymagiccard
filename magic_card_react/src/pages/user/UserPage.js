@@ -3,10 +3,6 @@ import { useParams } from "react-router-dom";
 import "./UserPage.css";
 import { API_URLS } from "../../config";
 
-// Base API URL constant to avoid hardcoding
-const API_BASE_URL = "https://mymagiccard.onrender.com/api";
-
-
 const UserPage = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
@@ -15,7 +11,7 @@ const UserPage = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/public/${id}`)
+    fetch(API_URLS.public(id))
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load profile");
         return res.json();
@@ -93,7 +89,7 @@ const BlockRenderer = ({ block }) => {
       return (
         <div className="block-pdf">
           <iframe
-            src={`${API_BASE_URL}${content}`}
+            src={content}
             title="PDF Preview"
             className="pdf-frame"
             frameBorder="0"
@@ -139,7 +135,7 @@ const LinkBlock = ({ content }) => {
   const [preview, setPreview] = React.useState(null);
 
   React.useEffect(() => {
-    fetch(`http://localhost:2000/api/link-preview?url=${encodeURIComponent(content)}`)
+    fetch(`${API_URLS.linkPreview}?url=${encodeURIComponent(content)}`)
       .then((res) => res.json())
       .then(setPreview)
       .catch(() => setPreview(null));
