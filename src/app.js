@@ -50,6 +50,12 @@ mongoose.connect('mongodb+srv://chokshiarnav:CnR7UHD6hGFxlSw9@majiccluster.edhrv
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((error) => console.error('❌ MongoDB connection error:', error));
 
+
+  app.get('/', (req, res) => {
+    res.redirect('/login');
+  });
+
+  
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());

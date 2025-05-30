@@ -22,7 +22,7 @@ const HighlightSchema = new mongoose.Schema({
 });
 
 const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
+  email: { type: String, unique: true },
   password: { type: String },
   themeColor: { type: String, default: '#b3a369' },
   name: { type: String, required: true },
