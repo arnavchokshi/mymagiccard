@@ -78,7 +78,16 @@ app.use('/public', userRoute);    // handle public profile routes
 app.use('/uploads', express.static(uploadsDir));
 
 // Start server
+app.use(express.static(path.join(__dirname, 'build')));
+
+// ...your API and other routes...
+
+// Handle all other GET requests by serving React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server is running on: http://0.0.0.0:${PORT}`);
 });
-
