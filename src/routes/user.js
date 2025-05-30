@@ -173,7 +173,6 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
 
     const update = {
       name,
-      email,
       header,
       highlights: parsedHighlights,
       pages: parsedPages.pages || parsedPages,
