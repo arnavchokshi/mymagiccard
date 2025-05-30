@@ -101,6 +101,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     const {
       name,
       email,
+      themeColor,
       header,
       highlights,
       pages,

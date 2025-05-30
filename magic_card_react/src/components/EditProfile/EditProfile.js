@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_URLS } from "../../config";
 
 
@@ -23,6 +23,7 @@ import BlockDropZone from "./BlockDropZone";
 
 // Utilities
 import { generateUniqueBlockId, getDefaultBlockContent } from "./utils";
+import OnboardingCarousel from "./OnboardingCarousel";
 
 const blockTypes = [
   { type: "text", label: "Text Block", tooltip: "Add simple text content" },
@@ -74,6 +75,8 @@ const EditProfile = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNameInBar, setShowNameInBar] = useState(false);
   const headerRef = useRef(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const navigate = useNavigate();
 
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
@@ -113,6 +116,7 @@ const EditProfile = () => {
               setPages(data.pages);
               setActivePageId(data.activePageId || "main");
             }
+            setShowOnboarding(true);
             return;
           }
         }
@@ -130,6 +134,7 @@ const EditProfile = () => {
           setPages(data.pages);
           setActivePageId(data.activePageId || "main");
         }
+        setShowOnboarding(true);
       } catch (err) {
         console.error("Failed to load profile:", err);
         setPages([{ id: "main", name: "Main", blocks: [] }]);
@@ -529,6 +534,31 @@ const EditProfile = () => {
             <h2>Editor Tools</h2>
           </div>
 
+          {/* Quick Actions at the top */}
+          <div className="sidebar-category">
+            <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
+              Save Profile
+            </button>
+
+            <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
+              View Public Profile
+            </Link>
+
+            <Link to="/generate" className="block-option enhance-ai-button" style={{ marginTop: 12 }}>
+              <span className="enhance-ai-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21M12 3V21M21 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M19.5 12C19.5 16.1421 16.1421 19.5 12 19.5C7.85786 19.5 4.5 16.1421 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
+                  <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                </svg>
+              </span>
+              <span>Enhance with AI</span>
+              <span className="enhance-ai-glow"></span>
+            </Link>
+          </div>
+
+          {/* Block categories below */}
           {Object.keys(blockCategories).map((category) => (
             <div key={category} className="sidebar-category">
               <div className="sidebar-category-title">{category}</div>
@@ -565,30 +595,6 @@ const EditProfile = () => {
               </div>
             </div>
           ))}
-
-          <div className="sidebar-category">
-            <div className="sidebar-category-title">Settings</div>
-            <button className="save-profile-btn" onClick={handleSaveProfile} type="button">
-              Save Profile
-            </button>
-
-            <Link to={`/user/${id}`} className="block-option view-public-button" style={{ marginTop: "8px", textAlign: "center", display: "block" }}>
-              View Public Profile
-            </Link>
-
-            <Link to="/generate" className="block-option enhance-ai-button" style={{ marginTop: 12 }}>
-              <span className="enhance-ai-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21M12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21M12 3V21M21 12H3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M19.5 12C19.5 16.1421 16.1421 19.5 12 19.5C7.85786 19.5 4.5 16.1421 4.5 12C4.5 7.85786 7.85786 4.5 12 4.5C16.1421 4.5 19.5 7.85786 19.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
-                  <circle cx="12" cy="12" r="1" fill="currentColor"/>
-                </svg>
-              </span>
-              <span>Enhance with AI</span>
-              <span className="enhance-ai-glow"></span>
-            </Link>
-          </div>
         </aside>
 
         <main className="profile-editor">
@@ -657,6 +663,11 @@ const EditProfile = () => {
           </div>
         </main>
       </div>
+      <OnboardingCarousel
+        show={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onGenerateAI={() => { setShowOnboarding(false); navigate("/resume-to-webpage"); }}
+      />
     </>
   );
 };
