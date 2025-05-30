@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./UserPage.css";
+import { API_URLS } from "../../config";
 
 // Base API URL constant to avoid hardcoding
 const API_BASE_URL = "http://192.168.86.40:2000";

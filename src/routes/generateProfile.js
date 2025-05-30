@@ -21,7 +21,6 @@ You are an AI agent that converts raw resume text into a full JSON user object f
 ✅ GENERAL OBJECT STRUCTURE:
 
 {
-  "email": "user@example.com",
   "name": "Full Name",
   "highlights": [HighlightSchema...],
   "pages": [PageSchema...],
