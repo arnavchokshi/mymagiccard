@@ -80,11 +80,16 @@ app.use('/uploads', express.static(uploadsDir));
 // Start server
 app.use(express.static(path.join(__dirname, 'build')));
 
-// ...your API and other routes...
-
-// Handle all other GET requests by serving React app
+// Serve React app for all other routes (SPA fallback)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  // If the request is for an API or static file, let it 404 as normal
+  if (
+    req.path.startsWith('/api') ||
+    req.path.startsWith('/uploads')
+  ) {
+    return res.status(404).send('Not Found');
+  }
+  res.sendFile(path.join(__dirname, '../magic_card_react/build/index.html'));
 });
 
 // Start server
