@@ -132,13 +132,15 @@
 
 /* Show drop zones when dragging */
 .drop-zone-wrapper.is-dragging .invisible-hit-area {
-  background-color: rgba(179, 163, 105, 0.05);
-  border: 2px dashed rgba(179, 163, 105, 0.2);
+  background-color: rgba(0,0,0,0.08);
+  border: 2.5px dashed #111;
+  box-shadow: 0 0 20px rgba(0,0,0,0.10);
+  transform: scaleY(1.2);
 }
 
 .drop-zone-wrapper.cell-drag-over .invisible-hit-area {
-  background-color: rgba(179, 163, 105, 0.15);
-  border: 2px dashed var(--primary-neon);
-  box-shadow: 0 0 20px rgba(179, 163, 105, 0.2);
+  background-color: rgba(0,0,0,0.08);
+  border: 2.5px dashed #111;
+  box-shadow: 0 0 20px rgba(0,0,0,0.10);
   transform: scaleY(1.2);
 }

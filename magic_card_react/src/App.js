@@ -6,6 +6,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import UserPage from './pages/user/UserPage';
 import EditProfile from "./components/EditProfile/EditProfile";
 import ResumeToProfile from "./components/EditProfile/ResumeToProfile"
+import ThankYouPage from "./components/EditProfile/ThankYouPage";
 
 
 
@@ -20,7 +21,7 @@ function App() {
         <Route path="/user/:id" element={<UserPage />} />
         <Route path="/user/:id/edit" element={<EditProfile />} />
         <Route path="/generate" element={<ResumeToProfile />} />
-
+        <Route path="/" element={<ThankYouPage />} />
       </Routes>
     </>
   );

@@ -296,6 +296,34 @@ const token = process.env["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"]; // Make s
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
 
+// Add this near the other routes in routes/user.js
+
+router.post("/onboarding", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(401).json({ message: "Invalid authentication token" });
+    }
+
+    const { template, themeColor, skipOnboarding } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Save onboarding preferences
+    user.template = template || user.template;
+    user.themeColor = themeColor || user.themeColor;
+    user.onboarding = !!skipOnboarding;
+
+    await user.save();
+
+    res.status(200).json({ message: "Onboarding preferences saved." });
+  } catch (err) {
+    console.error("Onboarding save error:", err);
+    res.status(500).json({ message: "Server error saving onboarding preferences" });
+  }
+});
+
 router.post("/generate-profile-from-resume", async (req, res) => {
   const { resumeText } = req.body;
 
