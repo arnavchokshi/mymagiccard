@@ -2,13 +2,108 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './OnboardingCarousel.css';
 
-const OnboardingCarousel = ({ show, onClose }) => {
+const templateOptions = [
+  { value: 'unfold', label: 'Sleek Template', img: '/UnfoldTemplate.png' },
+  { value: 'minimal', label: 'Professional Template', img: '/MinimalTemplate.png' },
+  { value: 'modern', label: 'Serene Template', img: '/ModernTemplate.png' },
+];
+
+const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [userInfo, setUserInfo] = useState({
+    template: 'unfold',
+    themeColor: '#b3a369',
+    skipOnboarding: false
+  });
   const navigate = useNavigate();
 
   if (!show) return null;
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Send the onboarding data to the backend
+      const response = await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template: userInfo.template,
+          themeColor: userInfo.themeColor,
+          skipOnboarding: userInfo.skipOnboarding
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save onboarding preferences');
+      }
+
+      // If successful, proceed with the profile setup
+      if (onProfileSetup) {
+        onProfileSetup(userInfo);
+      }
+      setCurrentSlide(1);
+    } catch (error) {
+      console.error('Error saving onboarding preferences:', error);
+      // Still proceed with the profile setup even if saving preferences fails
+      if (onProfileSetup) {
+        onProfileSetup(userInfo);
+      }
+      setCurrentSlide(1);
+    }
+  };
+
   const slides = [
+    {
+      type: 'profile-setup',
+      title: 'Get Started',
+      subtitle: 'Choose your style and theme color',
+      content: (
+        <form
+          className="onboarding-profile-form"
+          onSubmit={handleSubmit}
+        >
+          <div className="onboarding-template-choices">
+            {templateOptions.map(opt => (
+              <div
+                key={opt.value}
+                className={`template-choice-img${userInfo.template === opt.value ? ' selected' : ''}`}
+                onClick={() => setUserInfo({ ...userInfo, template: opt.value })}
+                tabIndex={0}
+                role="button"
+                aria-label={opt.label}
+              >
+                <img src={opt.img} alt={opt.label} />
+                <div className="template-choice-label">{opt.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="onboarding-inline-row">
+            <label className="onboarding-label-inline">
+              Theme Color
+            </label>
+            <input
+              type="color"
+              value={userInfo.themeColor}
+              onChange={e => setUserInfo({ ...userInfo, themeColor: e.target.value })}
+              className="onboarding-input-color"
+            />
+          </div>
+          <div className="onboarding-checkbox-container">
+            <label className="onboarding-checkbox-label">
+              <input
+                type="checkbox"
+                checked={userInfo.skipOnboarding}
+                onChange={e => setUserInfo({ ...userInfo, skipOnboarding: e.target.checked })}
+                className="onboarding-checkbox"
+              />
+              <span>Don't show this message again</span>
+            </label>
+          </div>
+        </form>
+      )
+    },
     {
       type: 'choice',
       title: 'Welcome to Magic Card!',
@@ -25,7 +120,7 @@ const OnboardingCarousel = ({ show, onClose }) => {
           </button>
           <button 
             className="choice-button manual-choice"
-            onClick={() => setCurrentSlide(1)}
+            onClick={() => setCurrentSlide(2)}
           >
             <span className="choice-icon">🎨</span>
             <span className="choice-title">Build from Scratch</span>
@@ -50,7 +145,7 @@ const OnboardingCarousel = ({ show, onClose }) => {
           </div>
           <div className="tutorial-step">
             <span className="step-number">3</span>
-            <p>Organize your information by adding new pages with the button in the top right.</p>
+            <p>Organize your information by adding new pages with the "+" on the right.</p>
           </div>
           <div className="tutorial-step">
             <span className="step-number">4</span>
@@ -159,8 +254,7 @@ const OnboardingCarousel = ({ show, onClose }) => {
   return (
     <div className="onboarding-overlay">
       <div className="onboarding-carousel">
-        <button className="close-button" onClick={onClose}>×</button>
-
+        <button className="close-button skip-button" onClick={onClose}>Skip</button>
         <div className="carousel-content">
           <h2 className="carousel-title">{currentSlideData.title}</h2>
           <p className="carousel-subtitle">{currentSlideData.subtitle}</p>
@@ -168,7 +262,15 @@ const OnboardingCarousel = ({ show, onClose }) => {
             {currentSlideData.content}
           </div>
         </div>
-
+        {currentSlide === 0 && (
+          <button 
+            type="submit"
+            className="nav-button next submit-bottom-right"
+            onClick={handleSubmit}
+          >
+            Next
+          </button>
+        )}
         {currentSlide > 0 && (
           <div className="carousel-navigation">
             <button 
