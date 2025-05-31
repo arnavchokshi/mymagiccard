@@ -18,27 +18,6 @@ const Header = () => {
         <Navbar.Brand as={Link} to="/" className="gradient-heading" style={{ fontWeight: 700, fontSize: '2rem', letterSpacing: '2px' }}>
           MagicFrames
         </Navbar.Brand>
-        <Nav className="ml-auto">
-          {token ? (
-            <>
-              <Nav.Link as={Link} to="/dashboard" className="nav-link">
-                Dashboard
-              </Nav.Link>
-              <Nav.Link className="nav-link" onClick={handleLogout}>
-                Logout
-              </Nav.Link>
-            </>
-          ) : (
-            <>
-              <Nav.Link as={Link} to="/login" className="nav-link">
-                Login
-              </Nav.Link>
-              <Nav.Link as={Link} to="/register" className="nav-link">
-                Signup
-              </Nav.Link>
-            </>
-          )}
-        </Nav>
       </Container>
     </Navbar>
   );

@@ -94,6 +94,10 @@ const Signup = () => {
           />
         </Form.Group>
 
+        <div className="secure-note">
+          🔒 Passwords are encrypted and secure.
+        </div>
+
         <Button variant="dark" type="submit" className="w-100">
           Signup
         </Button>

@@ -9,6 +9,7 @@ const BlockSchema = new mongoose.Schema({
 const PageSchema = new mongoose.Schema({
   id: { type: String, required: true },
   name: { type: String, default: "New Page" },
+  color: { type: String, default: '#FFFFFF' },
   blocks: [BlockSchema]
 });
 
@@ -22,9 +23,15 @@ const HighlightSchema = new mongoose.Schema({
 });
 
 const UserSchema = new mongoose.Schema({
-  email: { type: String, unique: true },
+  email: { type: String, unique: true, required: true },
   password: { type: String },
-  themeColor: { type: String, default: '#b3a369' },
+  themeColor: { type: String, default: '#FFFFFF' },
+  onboarding: { type: Boolean, default: false },
+  template: { 
+    type: String, 
+    enum: ["Serene", "Sleek", "Professional"],
+    default: "Professional"
+  },
   name: { type: String, required: true },
   backgroundPhoto: { type: String },
   header: { type: String },
