@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_URLS } from "../../config";
+import { UnfoldTemplate, MinimalTemplate, ModernTemplate } from './templates';
 
 
 // Blocks
@@ -77,7 +78,11 @@ const EditProfile = () => {
   const [showNameInBar, setShowNameInBar] = useState(false);
   const headerRef = useRef(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [userOnboarding, setUserOnboarding] = useState(true);
   const navigate = useNavigate();
+  const [selectedTemplate, setSelectedTemplate] = useState('unfold');
+  const [showProfileControls, setShowProfileControls] = useState(false);
+  const profileControlsRef = useRef(null);
 
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
@@ -94,6 +99,21 @@ const EditProfile = () => {
     }, 5000); // Animation completes after 5 seconds
     
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.pageYOffset;
+      const clouds = document.querySelectorAll('.cloud');
+      
+      clouds.forEach((cloud, index) => {
+        const speed = (index + 1) * -0.2; // Negative for opposite direction
+        cloud.style.transform = `translateY(${scrolled * speed}px)`;
+      });
+    };
+  
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -118,7 +138,8 @@ const EditProfile = () => {
               setPages(data.pages);
               setActivePageId(data.activePageId || "main");
             }
-            setShowOnboarding(true);
+            setUserOnboarding(!!data.onboarding);
+            setShowOnboarding(!!data.onboarding);
             return;
           }
         }
@@ -137,7 +158,8 @@ const EditProfile = () => {
           setPages(data.pages);
           setActivePageId(data.activePageId || "main");
         }
-        setShowOnboarding(true);
+        setUserOnboarding(false);
+        setShowOnboarding(false);
       } catch (err) {
         console.error("Failed to load profile:", err);
         setPages([{ id: "main", name: "Main", blocks: [] }]);
@@ -421,7 +443,9 @@ const EditProfile = () => {
       form.append("email", formData.email);
       form.append("header", formData.header);
       form.append("highlights", JSON.stringify(formData.highlights));
-      form.append("pages", JSON.stringify({ pages, activePageId }));
+      // Ensure each page includes its color property
+      const pagesWithColor = pages.map(p => ({ ...p, color: p.color || formData.themeColor }));
+      form.append("pages", JSON.stringify({ pages: pagesWithColor, activePageId }));
       form.append("blocksList", JSON.stringify(blocksList));
       form.append("themeColor", formData.themeColor);
 
@@ -480,62 +504,122 @@ const EditProfile = () => {
     }));
   };
 
+  const renderHeaderTemplate = () => {
+    const templateProps = {
+      name: formData.name,
+      header: formData.header,
+      backgroundPhoto: formData.backgroundPhoto
+    };
+
+    switch (selectedTemplate) {
+      case 'unfold':
+        return <UnfoldTemplate {...templateProps} />;
+      case 'minimal':
+        return <MinimalTemplate {...templateProps} />;
+      case 'modern':
+        return <ModernTemplate {...templateProps} />;
+      default:
+        return <UnfoldTemplate {...templateProps} />;
+    }
+  };
+
+  const handlePageClick = (pageId) => {
+    const pageElement = document.getElementById(`page-${pageId}`);
+    if (pageElement) {
+      pageElement.scrollIntoView({ behavior: 'smooth' });
+    }
+    setActivePageId(pageId);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileControlsRef.current && !profileControlsRef.current.contains(event.target)) {
+        setShowProfileControls(false);
+      }
+    }
+    if (showProfileControls) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showProfileControls]);
+
   return (
     <>
-      <div className="fixed-page-tabs-bar">
-        <label htmlFor="background-upload" className="change-background-btn" style={{ margin: '0 24px 0 0', position: 'static' }}>
-          Change Background
-        </label>
-        <button 
-          className="change-background-btn" 
-          onClick={() => {
-            const newName = prompt("Enter your name:", formData.name);
-            if (newName) {
-              const newHeader = prompt("Enter your header text:", formData.header);
-              if (newHeader) {
-                setFormData(prev => ({
-                  ...prev,
-                  name: newName,
-                  header: newHeader
-                }));
-              }
-            }
-          }}
-          style={{ margin: '0 24px 0 0', position: 'static' }}
-        >
-          Change Name & Header
-        </button>
-        <input
-          type="file"
-          accept="image/*"
-          id="background-upload"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) setFormData({ ...formData, backgroundPhoto: file });
-          }}
-          style={{ display: "none" }}
-        />
-        <div className={`bar-username${showNameInBar ? " visible" : ""}`}>{formData.name}</div>
-        <div style={{ flex: 1 }} />
-        <PageTabs
-          pages={pages}
-          activePageId={activePageId}
-          onSwitchPage={setActivePageId}
-          onAddPage={() => {
-            const newId = `page-${Date.now()}`;
-            setPages([...pages, { id: newId, name: "New Page", blocks: [] }]);
-            setActivePageId(newId);
-          }}
-          onRenamePage={handleRenamePage}
-        />
-      </div>
       <div className="edit-page">
+
         <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
-          ☰ {/* Hamburger Icon */}
+          ☰
         </button>
         <aside className={`sidebar ${sidebarActive ? "active" : ""} ${isSidebarOpen ? "open" : ""}`}>
           <div className="sidebar-header">
             <h2>Editor Tools</h2>
+          </div>
+          <div className="profile-controls-dropdown-wrapper">
+            <button
+              className="profile-controls-dropdown-btn"
+              onClick={() => setShowProfileControls((v) => !v)}
+              aria-haspopup="true"
+              aria-expanded={showProfileControls}
+            >
+              Profile Settings &#9881;
+            </button>
+            {showProfileControls && (
+              <div className="profile-controls-bar profile-controls-dropdown" ref={profileControlsRef}>
+                <label htmlFor="background-upload" className="change-background-btn">
+                  Change Background
+                </label>
+                <button 
+                  className="change-background-btn" 
+                  onClick={() => {
+                    const newName = prompt("Enter your name:", formData.name);
+                    if (newName) {
+                      const newHeader = prompt("Enter your header text:", formData.header);
+                      if (newHeader) {
+                        setFormData(prev => ({
+                          ...prev,
+                          name: newName,
+                          header: newHeader
+                        }));
+                      }
+                    }
+                  }}
+                >
+                  Change Name & Header
+                </button>
+                <select
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  className="change-background-btn"
+                >
+                  <option value="unfold">Sleek Template</option>
+                  <option value="minimal">Professional Template</option>
+                  <option value="modern">Serene Template</option>
+                </select>
+                <div className="theme-color-picker" style={{ margin: 0 }}>
+                  <label htmlFor="theme-color">Theme Color</label>
+                  <input
+                    type="color"
+                    id="theme-color"
+                    value={formData.themeColor}
+                    onChange={(e) => setFormData(prev => ({ ...prev, themeColor: e.target.value }))}
+                    style={{ width: "40px", height: "40px", margin: 0 }}
+                  />
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="background-upload"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) setFormData({ ...formData, backgroundPhoto: file });
+                  }}
+                  style={{ display: "none" }}
+                />
+              </div>
+            )}
           </div>
 
           {/* Quick Actions at the top */}
@@ -560,17 +644,6 @@ const EditProfile = () => {
               <span>Enhance with AI</span>
               <span className="enhance-ai-glow"></span>
             </Link>
-
-            <div className="theme-color-picker" style={{ marginTop: "20px" }}>
-              <label htmlFor="theme-color">Theme Color</label>
-              <input
-                type="color"
-                id="theme-color"
-                value={formData.themeColor}
-                onChange={(e) => setFormData(prev => ({ ...prev, themeColor: e.target.value }))}
-                style={{ width: "100%", height: "40px", marginTop: "8px" }}
-              />
-            </div>
           </div>
 
           {/* Block categories below */}
@@ -612,75 +685,178 @@ const EditProfile = () => {
           ))}
         </aside>
 
-        <main className="profile-editor">
+        {/* Vertical right-side page navigation */}
+        <nav className="vertical-page-nav">
+          {pages.map((page) => (
+            <div
+              key={page.id}
+              className="vertical-page-nav-item"
+              onClick={() => handlePageClick(page.id)}
+              style={{ cursor: 'pointer', margin: '12px 0', color: '#fff', fontWeight: 500, fontSize: '18px', writingMode: 'vertical-lr', textAlign: 'center', letterSpacing: '0.05em', opacity: 0.7, transition: 'opacity 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = 1}
+              onMouseLeave={e => e.currentTarget.style.opacity = 0.7}
+            >
+              {page.name}
+            </div>
+          ))}
           <div
-            className="profile-header-background"
-            style={{
-              backgroundImage: formData.backgroundPhoto
-                ? `url(${formData.backgroundPhoto instanceof File ? URL.createObjectURL(formData.backgroundPhoto) : formData.backgroundPhoto})`
-                : `url('/defaultBackground.jpg')`,
+            className="vertical-page-nav-add"
+            title="Add Page"
+            onClick={() => {
+              const newId = `page-${Date.now()}`;
+              setPages(prevPages => {
+                const updated = [...prevPages, { id: newId, name: "New Page", blocks: [] }];
+                setTimeout(() => handlePageClick(newId), 100);
+                return updated;
+              });
             }}
+            style={{
+              marginTop: '24px',
+              fontSize: '28px',
+              color: '#fff',
+              opacity: 0.7,
+              cursor: 'pointer',
+              userSelect: 'none',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = 1}
+            onMouseLeave={e => e.currentTarget.style.opacity = 0.7}
           >
-            <div className="profile-header-overlay">
-              <div className="fancy-header-center" ref={headerRef}>
-                <h1 className="fancy-header-name">
-                  {formData.name || "Your Name"}
-                </h1>
-                <div className="fancy-header-subtitle">
-                  <span className="typewriter-text">
-                    {formData.header || "Currently @ ..."}
-                  </span>
+            +
+          </div>
+        </nav>
+
+        <main
+          className="profile-editor"
+          style={{
+            backgroundColor: (activePage && (activePage.color || formData.themeColor)) + '80'
+          }}
+        >
+          {renderHeaderTemplate()}
+          <div className="main-content">
+            {pages.map((page, idx) => (
+              <div 
+                key={page.id} 
+                id={`page-${page.id}`}
+                className="page-section"
+                style={{ 
+                  minHeight: '100vh',
+                  padding: '0',
+                  borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  backgroundColor: `${page.color || formData.themeColor}`,
+                  opacity: 1,
+                  position: 'relative',
+                  zIndex: 10 + idx,
+                }}
+              >
+                <div className="page-gradient-overlay" />
+                <div className="page-side-gradient-overlay" />
+                <div style={{ position: 'absolute', top: 18, left: 24, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <label htmlFor={`color-picker-${page.id}`} style={{ color: '#fff', fontSize: 20, fontWeight: 500, marginRight: 6 }}>Page Color</label>
+                  <input
+                    id={`color-picker-${page.id}`}
+                    type="color"
+                    value={page.color || formData.themeColor}
+                    onChange={e => {
+                      const newColor = e.target.value;
+                      setPages(pages.map(p => p.id === page.id ? { ...p, color: newColor } : p));
+                    }}
+                    style={{ width: 43, height: 32, border: '1px solid #000000', borderRadius: 6, background: 'rgba(30,30,30,0.7)', cursor: 'pointer', padding: 0 }}
+                  />
                 </div>
-                <div className="down-arrow-anim">
-                  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 10V26" stroke="#b3a369" strokeWidth="2.5" strokeLinecap="round"/>
-                    <path d="M11 19L18 26L25 19" stroke="#b3a369" strokeWidth="2.5" strokeLinecap="round"/>
-                  </svg>
+                <div className="page-inner-content" style={{ padding: '0 100px', width: '100%', boxSizing: 'border-box' }}>
+                  {/* X button for deleting page, not shown for the first page */}
+                  {idx !== 0 && (
+                    <button
+                      className="page-delete-btn"
+                      title="Delete Page"
+                      onClick={() => {
+                        setPages(pages.filter((p) => p.id !== page.id));
+                      }}
+                    >
+                      <span className="delete-x">×</span>
+                      <span className="delete-label">delete whole page</span>
+                    </button>
+                  )}
+                  <div className="page-header" style={{ marginBottom: '40px', textAlign: 'center' }}>
+                    <input
+                      type="text"
+                      value={page.name}
+                      onChange={e => handleRenamePage(page.id, e.target.value)}
+                      className="page-title-input"
+                      style={{
+                        color: '#fff',
+                        fontSize: '2.8rem',
+                        fontWeight: 700,
+                        background: 'none',
+                        border: 'none',
+                        outline: 'none',
+                        textAlign: 'center',
+                        width: '100%',
+                        marginBottom: '16px',
+                        marginTop: '8px',
+                        letterSpacing: '0.01em',
+                        padding: 0,
+                        borderRadius: '8px',
+                        boxShadow: 'none',
+                      }}
+                      maxLength={40}
+                    />
+                  </div>
+                  {/* Render HighlightsBar inside the Main page */}
+                  {page.id === 'main' && (
+                    <div className="highlights-section" style={{ marginBottom: '32px' }}>
+                      <HighlightsBar
+                        highlights={formData.highlights}
+                        newHighlight={newHighlight}
+                        setNewHighlight={setNewHighlight}
+                        onAdd={handleAddHighlight}
+                        onRemove={handleRemoveHighlight}
+                      />
+                    </div>
+                  )}
+                  <div className="blocks-list">
+                    <BlockDropZone
+                      blocks={page.blocks}
+                      draggedBlockType={draggedBlockType}
+                      renderBlock={renderBlock}
+                      isDragging={isDragging}
+                      onInsertBlock={(type, index) => {
+                        const updated = [...page.blocks];
+                        if (!type) {
+                          updated.splice(index, 1);
+                        } else {
+                          const newBlock = {
+                            id: generateUniqueBlockId(),
+                            type,
+                            content: getDefaultBlockContent(type),
+                          };
+                          while (updated.length < index) updated.push(null);
+                          updated.splice(index, 0, newBlock);
+                        }
+                        const updatedPages = pages.map(p => 
+                          p.id === page.id ? { ...p, blocks: updated } : p
+                        );
+                        setPages(updatedPages);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          <div className="main-content">
-            <HighlightsBar
-              highlights={formData.highlights}
-              newHighlight={newHighlight}
-              setNewHighlight={setNewHighlight}
-              onAdd={handleAddHighlight}
-              onRemove={handleRemoveHighlight}
-            />
-
-          <div className="divider-line" />
-
-          <div className="blocks-list">
-            <BlockDropZone
-              blocks={blocksList}
-              draggedBlockType={draggedBlockType}
-              renderBlock={renderBlock}
-              isDragging={isDragging}
-              onInsertBlock={(type, index) => {
-                const updated = [...blocksList];
-                if (!type) {
-                  updated.splice(index, 1);
-                } else {
-                  const newBlock = {
-                    id: generateUniqueBlockId(),
-                    type,
-                    content: getDefaultBlockContent(type),
-                  };
-                  while (updated.length < index) updated.push(null);
-                  updated.splice(index, 0, newBlock);
-                }
-                updateBlocksForActivePage(updated);
-              }}
-            />
-          </div>
+            ))}
           </div>
         </main>
       </div>
       <OnboardingCarousel
         show={showOnboarding}
         onClose={() => setShowOnboarding(false)}
+        onProfileSetup={(userInfo) => {
+          // Hide onboarding if skipOnboarding is true or after setup
+          if (userInfo.skipOnboarding) {
+            setShowOnboarding(false);
+            setUserOnboarding(false);
+          }
+        }}
         onGenerateAI={() => { setShowOnboarding(false); navigate("/resume-to-webpage"); }}
       />
     </>
