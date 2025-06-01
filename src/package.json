@@ -8,9 +8,13 @@
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.2",
+    "cloudinary": "^2.6.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^5.1.0",
-    "mongoose": "^8.15.0"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.0",
+    "multer": "^2.0.0",
+    "open-graph-scraper": "^6.10.0"
   }
 }
