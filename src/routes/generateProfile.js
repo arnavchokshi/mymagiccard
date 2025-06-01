@@ -121,7 +121,7 @@ The structure should look like:
 - "flip":
   {
     "frontSide": {
-      "imageUrl": "https://example.com/image.jpg",
+      "imageUrl": "https://images.unsplash.com/photo-xxxx",
       "title": "Front Title",
       "subtitle": "Front Subtitle"
     },
@@ -162,12 +162,13 @@ ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
 Use at most 3 highlights with max 15 characters. Highlights are users biggest flexing points. (4.0 GPA, Amazon intern, etc.)
 Make the color of the page the same different but follow a theme.
+When adding images in image or flip blocks, use unsplash.com to find images. Try to find images that are relevant to the context of the block.
 1. PAGE STRUCTURE:
    - About Page (Required):
      • Title block: Professional introduction
      • Text block: Bio (min 200 characters)
-     • PDF block: Resume
      • ContactsText block: All professional links
+     • PDF block: Resume (Only if resume link is provided)
      • MultiBlock: Skills overview with categories
 
    - Education Page:
@@ -176,25 +177,25 @@ Make the color of the page the same different but follow a theme.
        - Front: Institution logo, degree name, years
        - Back: Key achievements, courses, projects
 
-   - Projects Page:
+   - Projects Page: (Only if projects are provided)
      • Title block: "Featured Projects"
      • SideBySide blocks for each project:
        - Left: Technical details, outcomes, technologies
        - Right: Project visual or demo
      • Code blocks: Show complex animations or interactive elements
 
-   - Professional Experience:
+   - Professional Experience: (Only if professional experience is provided)
      • Title block: "Work Experience"
      • SideBySide blocks for each role:
        - Left: Role details, achievements, metrics
        - Right: Company-related visuals
      • MultiBlock: Skills and technologies used
 
+     - Other pages can be made occording to how resume input is formatted.
+
 2. CODE BLOCK GUIDELINES:
    - Each code block must either have a morphin hover animation, or be a graph showing relevant information. Animations must be complex and engaging.
    - Use CSS variables for easy customization
-   - Implement smooth transitions (0.3s - 0.6s)
-   - Add subtle shadows and gradient effects
    - Include hover, focus, and active states
    ⚠️ IMPORTANT: All code blocks must be valid JSON string literals:
   - Escape **all** inner double quotes: use "\""
@@ -204,12 +205,10 @@ Make the color of the page the same different but follow a theme.
 
 
 3. CONTENT QUALITY:
-   - All text blocks: between 150-250 characters
+   - All text blocks: between minimum 150 characters
    - Use bullet points for better readability
-   - Include metrics and specific examples
-   - Maintain professional tone
-   - Break long content into paragraphs
-   - Use active voice and action verbs
+   - Use ALL information given from resume in same wording
+   - If character limit is not met make your own content.
 
 4. VISUAL HIERARCHY:
    - Start each page with a title block

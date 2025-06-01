@@ -216,6 +216,8 @@ const UserPage = () => {
               <div className="page-gradient-overlay" />
               <div className="page-side-gradient-overlay" />
               <div className="page-inner-content" style={{ padding: '0 100px', width: '100%', boxSizing: 'border-box' }}>
+                {/* Page name heading */}
+                <h2 className="page-title-readonly" style={{ color: '#fff', fontSize: '2.2rem', fontWeight: 700, textAlign: 'center', margin: '32px 0 24px 0', letterSpacing: '0.01em' }}>{page.name && page.name.trim() ? page.name : 'Untitled Page'}</h2>
                 {page.id === 'main' && (
                   <div className="highlights-section" style={{ marginBottom: '32px' }}>
                     <HighlightsBar
