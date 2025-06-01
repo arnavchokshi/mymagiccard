@@ -47,6 +47,7 @@ PAGES FORMAT:
   {
     "id": "page-001",
     "name": "About",
+    "color": "#2502be",
     "blocks": [BlockSchema...]
   },
   ...
@@ -160,7 +161,7 @@ STYLE & COMPLETENESS INSTRUCTIONS:
 ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
 Use at most 3 highlights with max 15 characters. Highlights are users biggest flexing points. (4.0 GPA, Amazon intern, etc.)
-
+Make the color of the page the same different but follow a theme.
 1. PAGE STRUCTURE:
    - About Page (Required):
      • Title block: Professional introduction
@@ -174,7 +175,6 @@ Use at most 3 highlights with max 15 characters. Highlights are users biggest fl
      • Flip blocks for each education milestone:
        - Front: Institution logo, degree name, years
        - Back: Key achievements, courses, projects
-     • Code block: Showcase relevant academic projects
 
    - Projects Page:
      • Title block: "Featured Projects"
@@ -191,12 +191,7 @@ Use at most 3 highlights with max 15 characters. Highlights are users biggest fl
      • MultiBlock: Skills and technologies used
 
 2. CODE BLOCK GUIDELINES:
-   - Each code block should demonstrate  these animations:
-     a) Floating elements with particle effects
-     b) Progressive reveal with scroll animations
-     c) Interactive hover states with glowing effects
-     d) Bonus points if it can use Morphing shapes with SVG animations
-     e) Graph element
+   - Each code block must either have a morphin hover animation, or be a graph showing relevant information. Animations must be complex and engaging.
    - Use CSS variables for easy customization
    - Implement smooth transitions (0.3s - 0.6s)
    - Add subtle shadows and gradient effects

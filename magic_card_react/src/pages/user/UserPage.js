@@ -18,6 +18,39 @@ import TitleBlock from "../../components/blocks/TitleBlock";
 import SideBySideBlock from "../../components/blocks/SideBySideBlock";
 import PDFBlock from "../../components/blocks/PDFBlock";
 
+// Typing animation for header (copied from EditProfile.js)
+function useTypingHeader(headerArray, typingSpeed = 80, pause = 1200, deletingSpeed = 40) {
+  const [displayed, setDisplayed] = useState('');
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  React.useEffect(() => {
+    if (!headerArray || headerArray.length === 0) {
+      setDisplayed('');
+      return;
+    }
+    if (!deleting && subIndex <= headerArray[index].length) {
+      setDisplayed(headerArray[index].substring(0, subIndex));
+      if (subIndex === headerArray[index].length) {
+        setTimeout(() => setDeleting(true), pause);
+      } else {
+        setTimeout(() => setSubIndex(subIndex + 1), typingSpeed);
+      }
+    } else if (deleting && subIndex >= 0) {
+      setDisplayed(headerArray[index].substring(0, subIndex));
+      if (subIndex === 0) {
+        setDeleting(false);
+        setIndex((index + 1) % headerArray.length);
+      } else {
+        setTimeout(() => setSubIndex(subIndex - 1), deletingSpeed);
+      }
+    }
+  }, [headerArray, index, subIndex, deleting, typingSpeed, deletingSpeed, pause]);
+
+  return displayed;
+}
+
 function hexToRgba(hex, alpha = 1) {
   let c = hex.replace('#', '');
   if (c.length === 3) {
@@ -43,6 +76,12 @@ const UserPage = () => {
   });
   const [pages, setPages] = useState([{ id: "main", name: "Main", blocks: [] }]);
   const [activePageId, setActivePageId] = useState("main");
+
+  // Typing animation for header (match EditProfile)
+  const animatedHeader = useTypingHeader(
+    Array.isArray(userData.header) ? userData.header : [userData.header],
+    80, 1200, 40
+  );
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -108,7 +147,7 @@ const UserPage = () => {
   const renderHeaderTemplate = () => {
     const templateProps = {
       name: userData.name,
-      header: userData.header,
+      header: `I'm ${animatedHeader}`,
       backgroundPhoto: userData.backgroundPhoto
     };
     switch (userData.template) {
