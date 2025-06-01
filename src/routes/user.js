@@ -173,12 +173,41 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
       return res.status(400).json({ message: "Invalid pages format" });
     }
 
+    let parsedHeader;
+if (Array.isArray(header)) {
+  // If you get an array, but it has one string joined with commas, split it
+  if (header.length === 1 && header[0].includes(',')) {
+    parsedHeader = header[0].split(',').map(s => s.trim()).filter(Boolean);
+  } else {
+    parsedHeader = header.filter(h => typeof h === 'string');
+  }
+} else if (typeof header === 'string') {
+  try {
+    const maybeArray = JSON.parse(header);
+    if (Array.isArray(maybeArray)) {
+      // Defensive: if it’s an array with a single comma-joined string, split
+      if (maybeArray.length === 1 && maybeArray[0].includes(',')) {
+        parsedHeader = maybeArray[0].split(',').map(s => s.trim()).filter(Boolean);
+      } else {
+        parsedHeader = maybeArray;
+      }
+    } else {
+      parsedHeader = header.split(',').map(s => s.trim()).filter(Boolean);
+    }
+  } catch {
+    // Fallback: split string by commas (in case someone sends "a, b, c")
+    parsedHeader = header.split(',').map(s => s.trim()).filter(Boolean);
+  }
+} else {
+  parsedHeader = [];
+}
+// Remove any empty strings
+parsedHeader = parsedHeader.filter(line => !!line);
+
+
     const update = {
       name,
-      // Ensure header is always an array of strings
-      header: Array.isArray(header)
-        ? header.filter(h => typeof h === 'string')
-        : (header ? [String(header)] : []),
+      header: parsedHeader,
       highlights: parsedHighlights,
       pages: parsedPages.pages || parsedPages,
       activePageId: parsedPages.activePageId || activePageId,
@@ -204,6 +233,11 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
 
     // Update user fields
     Object.assign(user, update);
+
+    // Set onboarding if provided
+    if (typeof req.body.onboarding !== 'undefined') {
+      user.onboarding = req.body.onboarding;
+    }
 
     await user.save();
 

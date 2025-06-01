@@ -274,7 +274,7 @@ const EditProfile = () => {
     email: "",
     highlights: [],
     backgroundPhoto: "",
-    header: ["a __ major", "based in ___", "interested in ___"],
+    header: [],
     themeColor: "#b3a369"
   });
 
@@ -294,7 +294,6 @@ const EditProfile = () => {
   const [showNameInBar, setShowNameInBar] = useState(false);
   const headerRef = useRef(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [userOnboarding, setUserOnboarding] = useState(true);
   const navigate = useNavigate();
   const [selectedTemplate, setSelectedTemplate] = useState('Sleek');
   const [showProfileControls, setShowProfileControls] = useState(false);
@@ -348,8 +347,15 @@ const EditProfile = () => {
               backgroundPhoto: data.backgroundPhoto || "",
               header: Array.isArray(data.header)
                 ? data.header
-                : data.header
-                  ? [data.header]
+                : typeof data.header === "string"
+                  ? (() => {
+                      try {
+                        const parsed = JSON.parse(data.header);
+                        return Array.isArray(parsed) ? parsed : [data.header];
+                      } catch {
+                        return [data.header];
+                      }
+                    })()
                   : ["Hello, my name is Your Name! Contact me at your.email@example.com"],
               themeColor: data.themeColor || "#b3a369"
             });
@@ -360,8 +366,7 @@ const EditProfile = () => {
             }
             
             console.log("Setting onboarding states - data.onboarding:", data.onboarding);
-            setUserOnboarding(data.onboarding === true);
-            setShowOnboarding(data.onboarding !== true);
+            setShowOnboarding(!data.onboarding);
             return;
           } else {
             const errorText = await res.text();
@@ -379,16 +384,22 @@ const EditProfile = () => {
                 backgroundPhoto: publicData.backgroundPhoto || "",
                 header: Array.isArray(publicData.header)
                   ? publicData.header
-                  : publicData.header
-                    ? [publicData.header]
+                  : typeof publicData.header === "string"
+                    ? (() => {
+                        try {
+                          const parsed = JSON.parse(publicData.header);
+                          return Array.isArray(parsed) ? parsed : [publicData.header];
+                        } catch {
+                          return [publicData.header];
+                        }
+                      })()
                     : ["Hello, my name is Your Name! Contact me at your.email@example.com"],
                 themeColor: publicData.themeColor || "#b3a369"
         });
               if (Array.isArray(publicData.pages)) {
                 setPages(publicData.pages);
         }
-        setUserOnboarding(false);
-        setShowOnboarding(false);
+        setShowOnboarding(!publicData.onboarding);
             }
           }
         }
@@ -418,7 +429,7 @@ const EditProfile = () => {
     // Update the header in formData
     setFormData(prev => ({
       ...prev,
-      header: newText
+      header: [newText]
     }));
     
     // Also try to extract name/email if it matches the pattern
@@ -1159,7 +1170,6 @@ const EditProfile = () => {
             if (res.ok) {
               setSelectedTemplate(userInfo.template); // update local state
               setFormData(prev => ({ ...prev, themeColor: userInfo.themeColor })); // update local state
-              setUserOnboarding(true);
               setShowOnboarding(false);
             } else {
               const err = await res.text();
