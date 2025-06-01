@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: magic-card-app
+    env: node
+    buildCommand: cd magic_card_react && npm install && npm run build
+    startCommand: cd magic_card_react && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+    autoDeploy: true 
