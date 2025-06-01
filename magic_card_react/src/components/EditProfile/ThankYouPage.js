@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const ThankYouPage = () => (
   <div className="thankyou-container">
@@ -39,8 +40,8 @@ const ThankYouPage = () => (
             Connect with me, I'd love to hear your feedback!
           </p>
           <div className="thankyou-btn-group">
-          <a href="/login" className="thankyou-btn">Login</a>
-          <a href="/register" className="thankyou-btn">Sign Up</a>
+          <Link to="/login" className="thankyou-btn">Login</Link>
+          <Link to="/register" className="thankyou-btn">Sign Up</Link>
         </div>
           
         </div>
