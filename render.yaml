@@ -2,7 +2,11 @@ services:
   - type: web
     name: magic-card-app
     env: node
-    buildCommand: cd magic_card_react && npm install && npm run build
+    buildCommand: |
+      cd magic_card_react
+      npm install
+      npm run build
+      cp -r build/* ../public/
     startCommand: cd magic_card_react && npm start
     envVars:
       - key: NODE_ENV
