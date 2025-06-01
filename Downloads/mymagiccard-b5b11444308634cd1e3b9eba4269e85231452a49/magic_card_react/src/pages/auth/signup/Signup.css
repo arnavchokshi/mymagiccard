@@ -1,0 +1,60 @@
+/* Center form styles */
+.center-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 90vh;
+}
+
+/* Form container styles */
+.center-form form {
+  max-width: 400px;
+  width: 100%;
+  padding: 20px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Label styles */
+.center-form form label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Input field styles */
+.center-form form .form-control {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Button styles */
+.center-form form .btn {
+  background-color: #1877f2;
+  color: #fff;
+  border: none;
+  padding: 10px 0;
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Button hover effect */
+.center-form form .btn:hover {
+  background-color: #166fe5;
+}
+
+.secure-note {
+  display: block;
+  margin-top: 8px;
+  color: #2d3748;
+  font-size: 0.98em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
