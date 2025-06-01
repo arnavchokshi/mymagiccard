@@ -34,30 +34,26 @@ const createAdminAccount = require("./scripts/admin");
 require("dotenv").config();
 const imageUploadRoute = require("./routes/imageUpload");
 
-
-
 const app = express();
 const PORT = process.env.PORT || 2000;
 
-
-
-
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://chokshiarnav:CnR7UHD6hGFxlSw9@majiccluster.edhrvjd.mongodb.net/majic_db', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://chokshiarnav:CnR7UHD6hGFxlSw9@majiccluster.edhrvjd.mongodb.net/majic_db', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((error) => console.error('❌ MongoDB connection error:', error));
 
+// CORS configuration
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://mymagiccard-frontend.onrender.com']
+    : ['http://localhost:3000'],
+  credentials: true
+}));
 
-  app.get('/', (req, res) => {
-    res.redirect('/login');
-  });
-
-  
 // Middleware
-app.use(cors());
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
 app.use("/api", imageUploadRoute);
@@ -82,21 +78,6 @@ app.use('/public', userRoute);    // handle public profile routes
 
 // Configure static file serving for uploads
 app.use('/uploads', express.static(uploadsDir));
-
-// Start server
-app.use(express.static(path.join(__dirname, 'build')));
-
-// Serve React app for all other routes (SPA fallback)
-app.get('*', (req, res) => {
-  // If the request is for an API or static file, let it 404 as normal
-  if (
-    req.path.startsWith('/api') ||
-    req.path.startsWith('/uploads')
-  ) {
-    return res.status(404).send('Not Found');
-  }
-  res.sendFile(path.join(__dirname, '../magic_card_react/build/index.html'));
-});
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
