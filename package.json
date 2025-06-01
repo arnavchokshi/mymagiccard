@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "cd src && node app.js",
-    "install": "cd src && npm install"
+    "install": "cd src && npm install && cd ../magic_card_react && npm install",
+    "build": "cd magic_card_react && npm run build"
   },
   "dependencies": {
     "express": "^5.1.0",
