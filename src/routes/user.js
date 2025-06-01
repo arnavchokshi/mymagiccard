@@ -80,7 +80,8 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
       highlights: [],
       pages: [],
-      activePageId: "main"
+      activePageId: "main",
+      header: [] // Always initialize as an array
     });
 
     await newUser.save();
@@ -174,7 +175,10 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
 
     const update = {
       name,
-      header: Array.isArray(header) ? header : (header ? [header] : []),
+      // Ensure header is always an array of strings
+      header: Array.isArray(header)
+        ? header.filter(h => typeof h === 'string')
+        : (header ? [String(header)] : []),
       highlights: parsedHighlights,
       pages: parsedPages.pages || parsedPages,
       activePageId: parsedPages.activePageId || activePageId,

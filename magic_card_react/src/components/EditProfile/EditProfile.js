@@ -274,7 +274,7 @@ const EditProfile = () => {
     email: "",
     highlights: [],
     backgroundPhoto: "",
-    header: "Hello, my name is Your Name! Contact me at your.email@example.com",
+    header: ["a __ major", "based in ___", "interested in ___"],
     themeColor: "#b3a369"
   });
 
@@ -283,7 +283,6 @@ const EditProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   
   const [pages, setPages] = useState([{ id: "main", name: "Main", blocks: [] }]);
-  const [activePageId, setActivePageId] = useState("main");
 
   const [newHighlight, setNewHighlight] = useState({ label: "", category: "Academic" });
   const [draggedBlockType, setDraggedBlockType] = useState(null);
@@ -303,23 +302,6 @@ const EditProfile = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [gearRotated, setGearRotated] = useState(false);
   const gearRef = useRef(null);
-
-  const activePage = pages.find((p) => p.id === activePageId) || pages[0];
-  const blocksList = activePage ? activePage.blocks : [];
-
-  // Update typed text when header changes
-  useEffect(() => {
-    setTypedText(formData.header || `Hello, my name is ${formData.name || "Your Name"}! Contact me at ${formData.email || "your.email@example.com"}`);
-  }, [formData.header, formData.name, formData.email]);
-
-  // Set animation as complete after timeout
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsTypingAnimationDone(true);
-    }, 5000); // Animation completes after 5 seconds
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -364,14 +346,17 @@ const EditProfile = () => {
               email: data.email || "",
               highlights: Array.isArray(data.highlights) ? data.highlights : [],
               backgroundPhoto: data.backgroundPhoto || "",
-              header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
+              header: Array.isArray(data.header)
+                ? data.header
+                : data.header
+                  ? [data.header]
+                  : ["Hello, my name is Your Name! Contact me at your.email@example.com"],
               themeColor: data.themeColor || "#b3a369"
             });
             setSelectedTemplate(data.template || 'Sleek');
             
             if (Array.isArray(data.pages)) {
               setPages(data.pages);
-              setActivePageId(data.activePageId || "main");
             }
             
             console.log("Setting onboarding states - data.onboarding:", data.onboarding);
@@ -392,12 +377,15 @@ const EditProfile = () => {
                 email: publicData.email || "",
                 highlights: Array.isArray(publicData.highlights) ? publicData.highlights : [],
                 backgroundPhoto: publicData.backgroundPhoto || "",
-                header: publicData.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
+                header: Array.isArray(publicData.header)
+                  ? publicData.header
+                  : publicData.header
+                    ? [publicData.header]
+                    : ["Hello, my name is Your Name! Contact me at your.email@example.com"],
                 themeColor: publicData.themeColor || "#b3a369"
         });
               if (Array.isArray(publicData.pages)) {
                 setPages(publicData.pages);
-                setActivePageId(publicData.activePageId || "main");
         }
         setUserOnboarding(false);
         setShowOnboarding(false);
@@ -407,7 +395,6 @@ const EditProfile = () => {
       } catch (err) {
         console.error("Failed to load profile:", err);
         setPages([{ id: "main", name: "Main", blocks: [] }]);
-        setActivePageId("main");
       }
     };
 
@@ -447,12 +434,12 @@ const EditProfile = () => {
 
   const updateBlocksForActivePage = (newBlocks) => {
     const updated = pages.map((p) =>
-      p.id === activePageId ? { ...p, blocks: newBlocks } : p
+      p.id === "main" ? { ...p, blocks: newBlocks } : p
     );
     setPages(updated);
   };
 
-  const handleDrop = (e, dropIndex = blocksList.length, parentMultiBlockIndex = null) => {
+  const handleDrop = (e, dropIndex = pages[0].blocks.length, parentMultiBlockIndex = null) => {
     e.preventDefault();
     const blockType = e.dataTransfer.getData("block-type") || draggedBlockType;
     if (!blockType) return;
@@ -463,11 +450,11 @@ const EditProfile = () => {
       content: getDefaultBlockContent(blockType)
     };
 
-    const updated = [...blocksList];
+    const updated = [...pages[0].blocks];
     if (parentMultiBlockIndex !== null) {
       const parent = updated[parentMultiBlockIndex];
       parent.content.push(newBlock);
-    } else if (!blocksList[dropIndex]) {
+    } else if (!updated[dropIndex]) {
       updated.splice(dropIndex, 0, newBlock);
     }
 
@@ -488,11 +475,11 @@ const EditProfile = () => {
           : block
       );
 
-    updateBlocksForActivePage(updateBlocksRecursively(blocksList));
+    updateBlocksForActivePage(updateBlocksRecursively(pages[0].blocks));
   };
 
   const updateBlock = (index, newBlock) => {
-    const updated = [...blocksList];
+    const updated = [...pages[0].blocks];
     updated[index] = newBlock;
     updateBlocksForActivePage(updated);
   };
@@ -606,7 +593,7 @@ const EditProfile = () => {
   };
 
   const handleContactLineChange = (blockId, index, field, value) => {
-    const updated = blocksList.map((block) =>
+    const updated = pages[0].blocks.map((block) =>
       block.id === blockId
         ? {
             ...block,
@@ -620,7 +607,7 @@ const EditProfile = () => {
   };
 
   const handleAddContactLine = (blockId) => {
-    const updated = blocksList.map((block) =>
+    const updated = pages[0].blocks.map((block) =>
       block.id === blockId
         ? {
             ...block,
@@ -632,7 +619,7 @@ const EditProfile = () => {
   };
 
   const handleRemoveContactLine = (blockId, index) => {
-    const updated = blocksList.map((block) =>
+    const updated = pages[0].blocks.map((block) =>
       block.id === blockId
         ? {
             ...block,
@@ -646,7 +633,7 @@ const EditProfile = () => {
   const handleRemoveBlock = (index) => {
     setBlockToDelete(index);
     setTimeout(() => {
-      const updated = [...blocksList];
+      const updated = [...pages[0].blocks];
       updated.splice(index, 1);
       updateBlocksForActivePage(updated);
       setBlockToDelete(null);
@@ -685,12 +672,12 @@ const EditProfile = () => {
       const form = new FormData();
       form.append("name", formData.name);
       form.append("email", formData.email);
-      form.append("header", formData.header);
+      form.append("header", JSON.stringify(formData.header));
       form.append("highlights", JSON.stringify(formData.highlights));
       // Ensure each page includes its color property
       const pagesWithColor = pages.map(p => ({ ...p, color: p.color || formData.themeColor }));
-      form.append("pages", JSON.stringify({ pages: pagesWithColor, activePageId }));
-      form.append("blocksList", JSON.stringify(blocksList));
+      form.append("pages", JSON.stringify({ pages: pagesWithColor, activePageId: "main" }));
+      form.append("blocksList", JSON.stringify(pages[0].blocks));
       form.append("themeColor", formData.themeColor);
 
       if (formData.backgroundPhoto instanceof File) {
@@ -775,7 +762,6 @@ const EditProfile = () => {
     if (pageElement) {
       pageElement.scrollIntoView({ behavior: 'smooth' });
     }
-    setActivePageId(pageId);
   };
 
   // Close dropdown when clicking outside
@@ -792,6 +778,22 @@ const EditProfile = () => {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showProfileControls]);
+
+  // Add a new function to handle content change for a specific page
+  function handleContentChangeForPage(pageId, blockId, value) {
+    setPages(pages => pages.map(page => {
+      if (page.id !== pageId) return page;
+      const updateBlocksRecursively = (blocks) =>
+        blocks.map((block) =>
+          block.id === blockId
+            ? { ...block, content: value }
+            : block.type === "multiBlock"
+            ? { ...block, content: updateBlocksRecursively(block.content) }
+            : block
+        );
+      return { ...page, blocks: updateBlocksRecursively(page.blocks) };
+    }));
+  }
 
   return (
     <>
@@ -956,7 +958,7 @@ const EditProfile = () => {
                         type: block.type,
                         content: getDefaultBlockContent(block.type)
                       };
-                      updateBlocksForActivePage([...blocksList, newBlock]);
+                      updateBlocksForActivePage([...pages[0].blocks, newBlock]);
                       setSelectedBlock(block.type);
                       setTimeout(() => setSelectedBlock(null), 1000);
                     }}
@@ -1013,7 +1015,7 @@ const EditProfile = () => {
         <main
           className="profile-editor"
           style={{
-            backgroundColor: (activePage && (activePage.color || formData.themeColor)) + '80'
+            backgroundColor: (pages[0] && (pages[0].color || formData.themeColor)) + '80'
           }}
         >
           {renderHeaderTemplate()}
@@ -1108,7 +1110,7 @@ const EditProfile = () => {
                     <BlockDropZone
                       blocks={page.blocks}
                       draggedBlockType={draggedBlockType}
-                      renderBlock={renderBlock}
+                      renderBlock={(block, index) => renderBlock(block, index, (blockId, value) => handleContentChangeForPage(page.id, blockId, value))}
                       isDragging={isDragging}
                       onInsertBlock={(type, index) => {
                         const updated = [...page.blocks];
@@ -1123,10 +1125,7 @@ const EditProfile = () => {
                           while (updated.length < index) updated.push(null);
                           updated.splice(index, 0, newBlock);
                         }
-                        const updatedPages = pages.map(p => 
-                          p.id === page.id ? { ...p, blocks: updated } : p
-                        );
-                        setPages(updatedPages);
+                        setPages(pages.map(p => p.id === page.id ? { ...p, blocks: updated } : p));
                       }}
                     />
                   </div>
@@ -1161,6 +1160,7 @@ const EditProfile = () => {
               setSelectedTemplate(userInfo.template); // update local state
               setFormData(prev => ({ ...prev, themeColor: userInfo.themeColor })); // update local state
               setUserOnboarding(true);
+              setShowOnboarding(false);
             } else {
               const err = await res.text();
               alert("Failed to update onboarding: " + err);
