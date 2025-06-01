@@ -3,15 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import './OnboardingCarousel.css';
 
 const templateOptions = [
-  { value: 'unfold', label: 'Sleek Template', img: '/UnfoldTemplate.png' },
-  { value: 'minimal', label: 'Professional Template', img: '/MinimalTemplate.png' },
-  { value: 'modern', label: 'Serene Template', img: '/ModernTemplate.png' },
+  { value: 'Sleek', label: 'Sleek Template', img: '/UnfoldTemplate.png' },
+  { value: 'Professional', label: 'Professional Template', img: '/MinimalTemplate.png' },
+  { value: 'Serene', label: 'Serene Template', img: '/ModernTemplate.png' },
 ];
 
 const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [userInfo, setUserInfo] = useState({
-    template: 'unfold',
+    template: 'Sleek',
     themeColor: '#b3a369',
     skipOnboarding: false
   });
@@ -21,37 +21,11 @@ const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      // Send the onboarding data to the backend
-      const response = await fetch('/api/user/onboarding', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          template: userInfo.template,
-          themeColor: userInfo.themeColor,
-          skipOnboarding: userInfo.skipOnboarding
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save onboarding preferences');
-      }
-
-      // If successful, proceed with the profile setup
-      if (onProfileSetup) {
-        onProfileSetup(userInfo);
-      }
-      setCurrentSlide(1);
-    } catch (error) {
-      console.error('Error saving onboarding preferences:', error);
-      // Still proceed with the profile setup even if saving preferences fails
-      if (onProfileSetup) {
-        onProfileSetup(userInfo);
-      }
-      setCurrentSlide(1);
+    // Call the parent handler to update onboarding/profile
+    if (onProfileSetup) {
+      onProfileSetup(userInfo);
     }
+    setCurrentSlide(1);
   };
 
   const slides = [

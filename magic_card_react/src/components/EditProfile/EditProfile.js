@@ -80,7 +80,7 @@ const EditProfile = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userOnboarding, setUserOnboarding] = useState(true);
   const navigate = useNavigate();
-  const [selectedTemplate, setSelectedTemplate] = useState('unfold');
+  const [selectedTemplate, setSelectedTemplate] = useState('Sleek');
   const [showProfileControls, setShowProfileControls] = useState(false);
   const profileControlsRef = useRef(null);
 
@@ -120,12 +120,25 @@ const EditProfile = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (token) {
-          const res = await fetch(API_URLS.profile, {
-            headers: { Authorization: `Bearer ${token}` }
+        console.log("Token available:", !!token);
+        
+        if (token && id) {
+          console.log("Attempting to fetch profile with token and URL ID:", id);
+          // Use the same format as the public endpoint
+          const res = await fetch(`${API_URLS.baseURL}/public/${id}`, {
+            method: 'GET',
+            headers: { 
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
           });
+          
+          console.log("Profile fetch response status:", res.status);
+          
           if (res.ok) {
             const data = await res.json();
+            console.log("Profile data received:", data);
+            
             setFormData({
               name: data.name || "",
               email: data.email || "",
@@ -134,32 +147,43 @@ const EditProfile = () => {
               header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
               themeColor: data.themeColor || "#b3a369"
             });
+            setSelectedTemplate(data.template || 'Sleek');
+            
             if (Array.isArray(data.pages)) {
               setPages(data.pages);
               setActivePageId(data.activePageId || "main");
             }
-            setUserOnboarding(!!data.onboarding);
-            setShowOnboarding(!!data.onboarding);
+            
+            console.log("Setting onboarding states - data.onboarding:", data.onboarding);
+            setUserOnboarding(data.onboarding === true);
+            setShowOnboarding(data.onboarding !== true);
             return;
+          } else {
+            const errorText = await res.text();
+            console.error("Profile fetch failed:", res.status, errorText);
+            // If profile fetch fails, try to fetch the public profile
+            console.log("Falling back to public profile fetch");
+            const publicRes = await fetch(API_URLS.public(id));
+            if (publicRes.ok) {
+              const publicData = await publicRes.json();
+              console.log("Public profile data received:", publicData);
+              setFormData({
+                name: publicData.name || "",
+                email: publicData.email || "",
+                highlights: Array.isArray(publicData.highlights) ? publicData.highlights : [],
+                backgroundPhoto: publicData.backgroundPhoto || "",
+                header: publicData.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
+                themeColor: publicData.themeColor || "#b3a369"
+              });
+              if (Array.isArray(publicData.pages)) {
+                setPages(publicData.pages);
+                setActivePageId(publicData.activePageId || "main");
+              }
+              setUserOnboarding(false);
+              setShowOnboarding(false);
+            }
           }
         }
-        // fallback to public fetch if no token or /api/me fails
-        const res = await fetch(API_URLS.public(id));
-        const data = await res.json();
-        setFormData({
-          name: data.name || "",
-          email: data.email || "",
-          highlights: Array.isArray(data.highlights) ? data.highlights : [],
-          backgroundPhoto: data.backgroundPhoto || "",
-          header: data.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
-          themeColor: data.themeColor || "#b3a369"
-        });
-        if (Array.isArray(data.pages)) {
-          setPages(data.pages);
-          setActivePageId(data.activePageId || "main");
-        }
-        setUserOnboarding(false);
-        setShowOnboarding(false);
       } catch (err) {
         console.error("Failed to load profile:", err);
         setPages([{ id: "main", name: "Main", blocks: [] }]);
@@ -512,11 +536,11 @@ const EditProfile = () => {
     };
 
     switch (selectedTemplate) {
-      case 'unfold':
+      case 'Sleek':
         return <UnfoldTemplate {...templateProps} />;
-      case 'minimal':
+      case 'Professional':
         return <MinimalTemplate {...templateProps} />;
-      case 'modern':
+      case 'Serene':
         return <ModernTemplate {...templateProps} />;
       default:
         return <UnfoldTemplate {...templateProps} />;
@@ -549,7 +573,7 @@ const EditProfile = () => {
   return (
     <>
       <div className="edit-page">
-
+        {console.log("Render - showOnboarding state:", showOnboarding)}
         <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
           ☰
         </button>
@@ -558,14 +582,14 @@ const EditProfile = () => {
             <h2>Editor Tools</h2>
           </div>
           <div className="profile-controls-dropdown-wrapper">
-            <button
-              className="profile-controls-dropdown-btn"
-              onClick={() => setShowProfileControls((v) => !v)}
-              aria-haspopup="true"
-              aria-expanded={showProfileControls}
-            >
-              Profile Settings &#9881;
-            </button>
+          <button
+            className="profile-controls-dropdown-btn"
+            onClick={() => setShowProfileControls((v) => !v)}
+            aria-haspopup="true"
+            aria-expanded={showProfileControls}
+          >
+            Profile Settings <span className="gear-icon">&#9881;</span>
+          </button>
             {showProfileControls && (
               <div className="profile-controls-bar profile-controls-dropdown" ref={profileControlsRef}>
                 <label htmlFor="background-upload" className="change-background-btn">
@@ -594,9 +618,9 @@ const EditProfile = () => {
                   onChange={(e) => setSelectedTemplate(e.target.value)}
                   className="change-background-btn"
                 >
-                  <option value="unfold">Sleek Template</option>
-                  <option value="minimal">Professional Template</option>
-                  <option value="modern">Serene Template</option>
+                  <option value="Sleek">Sleek Template</option>
+                  <option value="Professional">Professional Template</option>
+                  <option value="Serene">Serene Template</option>
                 </select>
                 <div className="theme-color-picker" style={{ margin: 0 }}>
                   <label htmlFor="theme-color">Theme Color</label>
@@ -850,11 +874,34 @@ const EditProfile = () => {
       <OnboardingCarousel
         show={showOnboarding}
         onClose={() => setShowOnboarding(false)}
-        onProfileSetup={(userInfo) => {
-          // Hide onboarding if skipOnboarding is true or after setup
-          if (userInfo.skipOnboarding) {
-            setShowOnboarding(false);
-            setUserOnboarding(false);
+        onProfileSetup={async (userInfo) => {
+          // Send onboarding data to backend
+          try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            const payload = {
+              template: userInfo.template, // use the value from onboarding
+              themeColor: userInfo.themeColor, // use the value from onboarding
+              onboarding: true
+            };
+            const res = await fetch(`${API_URLS.baseURL}/api/me`, {
+              method: "PATCH",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+              setSelectedTemplate(userInfo.template); // update local state
+              setFormData(prev => ({ ...prev, themeColor: userInfo.themeColor })); // update local state
+              setUserOnboarding(true);
+            } else {
+              const err = await res.text();
+              alert("Failed to update onboarding: " + err);
+            }
+          } catch (err) {
+            alert("Failed to update onboarding: " + err.message);
           }
         }}
         onGenerateAI={() => { setShowOnboarding(false); navigate("/resume-to-webpage"); }}
