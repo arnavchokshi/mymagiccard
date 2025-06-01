@@ -18,17 +18,22 @@ router.post("/generate-profile", authenticateToken, async (req, res) => {
     const prompt = `
 You are an AI agent that converts raw resume text into a full JSON user object for a portfolio website. The resulting object must follow this exact format, compatible with a MongoDB schema. Do not wrap the result in triple backticks or return plain text — only return a single clean JSON object.
 
-✅ GENERAL OBJECT STRUCTURE:
+GENERAL OBJECT STRUCTURE:
 
 {
   "name": "Full Name",
   "highlights": [HighlightSchema...],
   "pages": [PageSchema...],
   "activePageId": "page-001"
-  "header: "Hello, my name is ___! Contact me at ___"
+  ""header": [
+    "a ___ major",
+    "based in ___"
+  ]
 }
 
-✅ HIGHLIGHTS FORMAT:
+Note: Header builds off of default "I'm " so fill out header with user details. Must add at least 4 headers about user.
+
+HIGHLIGHTS FORMAT:
 "highlights": [
   {
     "label": "UX Researcher",
@@ -37,7 +42,7 @@ You are an AI agent that converts raw resume text into a full JSON user object f
   ...
 ]
 
-✅ PAGES FORMAT:
+PAGES FORMAT:
 "pages": [
   {
     "id": "page-001",
@@ -47,7 +52,7 @@ You are an AI agent that converts raw resume text into a full JSON user object f
   ...
 ]
 
-✅ BLOCKS FORMAT:
+BLOCKS FORMAT:
 Each block must include:
 - "id": a unique ID like "block-001" or "block-<timestamp>-randomstring"
 - "type": one of:
@@ -61,7 +66,7 @@ Each block must include:
   - "multiBlock"
   - "contactsText"
 
-📦 BLOCK CONTENT FORMATS:
+BLOCK CONTENT FORMATS:
 
 - "text":
   {
@@ -154,12 +159,11 @@ The structure should look like:
 STYLE & COMPLETENESS INSTRUCTIONS:
 ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
-Use at most 4 highlights with max 15 characters
+Use at most 3 highlights with max 15 characters. Highlights are users biggest flexing points. (4.0 GPA, Amazon intern, etc.)
 
 1. PAGE STRUCTURE:
    - About Page (Required):
      • Title block: Professional introduction
-     • Image block: Profile photo placeholder. Look up the user with their name and email and use the image from their linkedin profile or other social media.
      • Text block: Bio (min 200 characters)
      • PDF block: Resume
      • ContactsText block: All professional links
@@ -269,11 +273,42 @@ ${resumeText}
       // Parse and validate the JSON
       const parsedJson = JSON.parse(rawJson);
 
-      const newUser = new User(parsedJson);
-      await newUser.save();
-      console.log("✅ User saved with ID:", newUser._id);
+      const userEmail = req.user.email;
+        if (!userEmail) {
+          return res.status(401).json({ message: "User not authenticated or email missing" });
+        }
 
-      res.json({ userId: newUser._id });
+        // Don't let AI output overwrite email
+        delete parsedJson.email;
+
+        let headerValue = parsedJson.header;
+        if (headerValue !== undefined) {
+          headerValue = Array.isArray(headerValue) ? headerValue : [headerValue];
+        }
+
+        // Only update allowed fields
+        const updatedUser = await User.findOneAndUpdate(
+          { email: userEmail },
+          {
+            $set: {
+              name: parsedJson.name,
+              highlights: parsedJson.highlights,
+              pages: parsedJson.pages,
+              activePageId: parsedJson.activePageId,
+              header: parsedJson.header,
+              // Add other fields as needed!
+            }
+          },
+          { new: true }
+        );
+
+        if (!updatedUser) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        console.log("✅ User profile updated for:", updatedUser.email);
+        res.json({ userId: updatedUser._id });
+
 
     } catch (err) {
       console.error("❌ Error parsing GPT output:", err);

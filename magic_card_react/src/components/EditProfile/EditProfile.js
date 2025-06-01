@@ -387,20 +387,20 @@ const EditProfile = () => {
             if (publicRes.ok) {
               const publicData = await publicRes.json();
               console.log("Public profile data received:", publicData);
-              setFormData({
+        setFormData({
                 name: publicData.name || "",
                 email: publicData.email || "",
                 highlights: Array.isArray(publicData.highlights) ? publicData.highlights : [],
                 backgroundPhoto: publicData.backgroundPhoto || "",
                 header: publicData.header || "Hello, my name is Your Name! Contact me at your.email@example.com",
                 themeColor: publicData.themeColor || "#b3a369"
-              });
+        });
               if (Array.isArray(publicData.pages)) {
                 setPages(publicData.pages);
                 setActivePageId(publicData.activePageId || "main");
-              }
-              setUserOnboarding(false);
-              setShowOnboarding(false);
+        }
+        setUserOnboarding(false);
+        setShowOnboarding(false);
             }
           }
         }
@@ -805,7 +805,7 @@ const EditProfile = () => {
             <h2>Editor Tools</h2>
           </div>
           <div className="profile-controls-dropdown-wrapper">
-          <button
+            <button
             className="profile-settings-glass-btn"
             onClick={() => setShowProfileModal(true)}
             style={{
@@ -849,7 +849,7 @@ const EditProfile = () => {
               }}
             >⚙️</span>
             <span style={{verticalAlign: 'middle'}}>Edit Settings</span>
-          </button>
+            </button>
             {showProfileControls && (
               <div className="profile-controls-bar profile-controls-dropdown" ref={profileControlsRef}>
                 <label htmlFor="background-upload" className="change-background-btn">
@@ -1023,7 +1023,7 @@ const EditProfile = () => {
                 key={page.id} 
                 id={`page-${page.id}`}
                 className="page-section"
-                style={{
+                style={{ 
                   minHeight: '100vh',
                   padding: 0,
                   borderBottom: '1px solid rgba(255,255,255,0.1)',

@@ -22,10 +22,10 @@ const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Call the parent handler to update onboarding/profile
-    if (onProfileSetup) {
-      onProfileSetup(userInfo);
-    }
-    setCurrentSlide(1);
+      if (onProfileSetup) {
+        onProfileSetup(userInfo);
+      }
+      setCurrentSlide(1);
   };
 
   const slides = [

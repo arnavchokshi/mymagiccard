@@ -64,7 +64,7 @@ app.use(cors({
   },
   credentials: true
 }));
-
+  
 // Middleware
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
