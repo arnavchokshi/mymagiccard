@@ -21,11 +21,17 @@ const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Call the parent handler to update onboarding/profile
-      if (onProfileSetup) {
-        onProfileSetup(userInfo);
-      }
-      setCurrentSlide(1);
+    if (onProfileSetup) {
+      onProfileSetup(userInfo);
+    }
+    setCurrentSlide(1);
+  };
+
+  const handleSkip = () => {
+    if (onProfileSetup) {
+      onProfileSetup({ ...userInfo, skipOnboarding: true });
+    }
+    if (onClose) onClose();
   };
 
   const slides = [
@@ -63,17 +69,6 @@ const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
               onChange={e => setUserInfo({ ...userInfo, themeColor: e.target.value })}
               className="onboarding-input-color"
             />
-          </div>
-          <div className="onboarding-checkbox-container">
-            <label className="onboarding-checkbox-label">
-              <input
-                type="checkbox"
-                checked={userInfo.skipOnboarding}
-                onChange={e => setUserInfo({ ...userInfo, skipOnboarding: e.target.checked })}
-                className="onboarding-checkbox"
-              />
-              <span>Don't show this message again</span>
-            </label>
           </div>
         </form>
       )
@@ -228,7 +223,7 @@ const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
   return (
     <div className="onboarding-overlay">
       <div className="onboarding-carousel">
-        <button className="close-button skip-button" onClick={onClose}>Skip</button>
+        <button className="close-button skip-button" onClick={handleSkip}>Skip and don't show again</button>
         <div className="carousel-content">
           <h2 className="carousel-title">{currentSlideData.title}</h2>
           <p className="carousel-subtitle">{currentSlideData.subtitle}</p>

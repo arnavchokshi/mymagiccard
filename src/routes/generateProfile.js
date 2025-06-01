@@ -161,7 +161,7 @@ STYLE & COMPLETENESS INSTRUCTIONS:
 ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
 Use at most 3 highlights with max 15 characters. Highlights are users biggest flexing points. (4.0 GPA, Amazon intern, etc.)
-Make the color of the page the same different but follow a theme.
+Make the color of the pages different but follow a theme.
 When adding images in image or flip blocks, use unsplash.com to find images. Try to find images that are relevant to the context of the block.
 1. PAGE STRUCTURE:
    - About Page (Required):
@@ -170,9 +170,7 @@ When adding images in image or flip blocks, use unsplash.com to find images. Try
      • ContactsText block: All professional links
      • PDF block: Resume (Only if resume link is provided)
      • MultiBlock: Skills overview with categories
-
-   - Education Page:
-     • Title block: "Educational Journey"
+     • Title block: "Educational Journey" (When adding education, make sure the student is getting a degree here and not just interning or researching. Add to professional ex)
      • Flip blocks for each education milestone:
        - Front: Institution logo, degree name, years
        - Back: Key achievements, courses, projects
@@ -194,7 +192,7 @@ When adding images in image or flip blocks, use unsplash.com to find images. Try
      - Other pages can be made occording to how resume input is formatted.
 
 2. CODE BLOCK GUIDELINES:
-   - Each code block must either have a morphin hover animation, or be a graph showing relevant information. Animations must be complex and engaging.
+   - Each code block must have a graph, pie, or bar chart showing relevant information like languages know, skill level, etc. Animations must be complex and engaging and use physics.
    - Use CSS variables for easy customization
    - Include hover, focus, and active states
    ⚠️ IMPORTANT: All code blocks must be valid JSON string literals:
