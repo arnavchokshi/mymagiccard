@@ -47,7 +47,7 @@ const ThankYouPage = () => (
         </div>
         
         <div className="note-box">
-          ⏱️ Note: Login/Signup may take up to 30 seconds
+        🔒 Passwords are encrypted and secure.
         </div>
       </div>
     </div>

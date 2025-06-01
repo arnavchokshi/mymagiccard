@@ -1294,49 +1294,78 @@ img {
   }
 }
 
-.profile-controls-dropdown-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  z-index: 1100;
-}
-
 .profile-controls-dropdown-btn {
-  background: rgba(30, 30, 30, 0.85);
-  color: #ffd700;
-  border: 1px solid rgba(179, 163, 105, 0.4);
-  border-radius: 12px;
-  padding: 10px 22px;
+  position: relative;
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(45, 45, 60, 0.8));
+  color: #b3993a;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 8px 20px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-  transition: background 0.2s, color 0.2s;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(255, 215, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-right: 12px;
+  margin-bottom: 12px;
   outline: none;
-}
-.profile-controls-dropdown-btn:hover, .profile-controls-dropdown-btn:focus {
-  background: rgba(179, 163, 105, 0.15);
-  color: #fff;
+  backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.profile-controls-dropdown {
+/* Shimmer effect */
+.profile-controls-dropdown-btn::before {
+  content: '';
   position: absolute;
-  top: 48px;
-  left: 0;
-  background: rgba(30, 30, 30, 0.97);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-  padding: 18px 28px;
-  min-width: 320px;
-  max-width: 95vw;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  z-index: 1200;
-  flex-wrap: wrap;
-  animation: fadeInDropdown 0.18s cubic-bezier(0.4,0,0.2,1);
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+  transition: left 0.6s;
 }
+
+.profile-controls-dropdown-btn:hover::before {
+  left: 100%;
+}
+
+.profile-controls-dropdown-btn:hover, 
+.profile-controls-dropdown-btn:focus {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.25));
+  color: #fff;
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 
+    0 6px 30px rgba(255, 215, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.profile-controls-dropdown-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 12px rgba(255, 215, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Spinning gear animation */
+.profile-controls-dropdown-btn .gear-icon {
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  display: inline-block;
+}
+
+.profile-controls-dropdown-btn:hover .gear-icon {
+  transform: rotate(180deg);
+}
+
+
 
 @keyframes fadeInDropdown {
   from { opacity: 0; transform: translateY(-10px); }

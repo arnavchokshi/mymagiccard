@@ -26,6 +26,18 @@ import BlockDropZone from "./BlockDropZone";
 import { generateUniqueBlockId, getDefaultBlockContent } from "./utils";
 import OnboardingCarousel from "./OnboardingCarousel";
 
+function hexToRgba(hex, alpha = 1) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) {
+    c = c.split('').map((char) => char + char).join('');
+  }
+  const num = parseInt(c, 16);
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 const blockTypes = [
   { type: "text", label: "Text Block", tooltip: "Add simple text content" },
   { type: "title", label: "Title Block", tooltip: "Add a title and subtitle" },
@@ -47,6 +59,211 @@ const blockCategories = {
   Layout: ["divider", "flip", "multiBlock", "sideBySide"],
   Info: ["contactsText"]
 };
+
+// Typing animation for header
+function useTypingHeader(headerArray, typingSpeed = 80, pause = 1200, deletingSpeed = 40) {
+  const [displayed, setDisplayed] = useState('');
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!headerArray || headerArray.length === 0) {
+      setDisplayed('');
+      return;
+    }
+    if (!deleting && subIndex <= headerArray[index].length) {
+      setDisplayed(headerArray[index].substring(0, subIndex));
+      if (subIndex === headerArray[index].length) {
+        setTimeout(() => setDeleting(true), pause);
+      } else {
+        setTimeout(() => setSubIndex(subIndex + 1), typingSpeed);
+      }
+    } else if (deleting && subIndex >= 0) {
+      setDisplayed(headerArray[index].substring(0, subIndex));
+      if (subIndex === 0) {
+        setDeleting(false);
+        setIndex((index + 1) % headerArray.length);
+      } else {
+        setTimeout(() => setSubIndex(subIndex - 1), deletingSpeed);
+      }
+    }
+  }, [headerArray, index, subIndex, deleting, typingSpeed, deletingSpeed, pause]);
+
+  return displayed;
+}
+
+// Modal component for profile settings
+function ProfileSettingsModal({ show, onClose, formData, setFormData, selectedTemplate, setSelectedTemplate }) {
+  if (!show) return null;
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(30,30,30,0.35)',
+      zIndex: 1000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backdropFilter: 'blur(8px)',
+    }}>
+      <div style={{
+        background: 'rgba(255,255,255,0.15)',
+        borderRadius: 18,
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.20)',
+        padding: '36px 32px',
+        minWidth: 340,
+        maxWidth: 400,
+        color: '#fff',
+        position: 'relative',
+        border: '1.5px solid rgba(255,255,255,0.18)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24
+      }}>
+        <button onClick={onClose} style={{
+          position: 'absolute',
+          top: 16, right: 16,
+          background: 'rgba(0,0,0,0.12)',
+          border: 'none',
+          borderRadius: 8,
+          color: '#fff',
+          fontSize: 22,
+          cursor: 'pointer',
+          padding: '2px 10px',
+        }}>×</button>
+        <h2 style={{margin: 0, fontWeight: 700, fontSize: 26, letterSpacing: 0.5}}>Profile Settings</h2>
+        <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+          <label style={{fontWeight: 500}}>Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: '1px solid #ccc',
+              fontSize: 16,
+              background: 'rgba(255,255,255,0.25)',
+              color: '#222',
+              outline: 'none',
+            }}
+            maxLength={40}
+          />
+        </div>
+        <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+          <label style={{fontWeight: 500}}>Header Lines</label>
+          {Array.isArray(formData.header) && formData.header.map((line, idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <input
+                type="text"
+                value={line}
+                onChange={e => setFormData(prev => ({
+                  ...prev,
+                  header: prev.header.map((l, i) => i === idx ? e.target.value : l)
+                }))}
+                style={{
+                  flex: 1,
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: '1px solid #ccc',
+                  fontSize: 15,
+                  background: 'rgba(255,255,255,0.25)',
+                  color: '#222',
+                  outline: 'none',
+                }}
+                maxLength={60}
+                placeholder={`Header line ${idx + 1}`}
+              />
+              {formData.header.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({
+                    ...prev,
+                    header: prev.header.filter((_, i) => i !== idx)
+                  }))}
+                  style={{
+                    background: 'rgba(0,0,0,0.10)',
+                    border: 'none',
+                    borderRadius: 6,
+                    color: '#c0392b',
+                    fontSize: 18,
+                    cursor: 'pointer',
+                    padding: '2px 8px',
+                  }}
+                  title="Remove line"
+                >×</button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, header: [...prev.header, ''] }))}
+            style={{
+              marginTop: 6,
+              padding: '7px 0',
+              borderRadius: 8,
+              border: 'none',
+              background: 'rgba(255,255,255,0.18)',
+              color: '#222',
+              fontWeight: 500,
+              fontSize: 15,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.10)',
+              letterSpacing: 0.5,
+              width: '100%'
+            }}
+          >+ Add Header Line</button>
+        </div>
+        <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+          <label style={{fontWeight: 500}}>Template</label>
+          <select
+            value={selectedTemplate}
+            onChange={e => setSelectedTemplate(e.target.value)}
+            style={{
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: '1px solid #ccc',
+              fontSize: 16,
+              background: 'rgba(255,255,255,0.25)',
+              color: '#222',
+              outline: 'none',
+            }}
+          >
+            <option value="Sleek">Sleek Template</option>
+            <option value="Professional">Professional Template</option>
+            <option value="Serene">Serene Template</option>
+          </select>
+        </div>
+        <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+          <label style={{fontWeight: 500}}>Theme Color</label>
+          <input
+            type="color"
+            value={formData.themeColor}
+            onChange={e => setFormData(prev => ({ ...prev, themeColor: e.target.value }))}
+            style={{ width: 48, height: 48, border: 'none', borderRadius: 8, background: 'rgba(255,255,255,0.25)', cursor: 'pointer' }}
+          />
+        </div>
+        <button
+          onClick={onClose}
+          style={{
+            marginTop: 18,
+            padding: '12px 0',
+            borderRadius: 8,
+            border: 'none',
+            background: 'rgba(255,255,255,0.22)',
+            color: '#222',
+            fontWeight: 600,
+            fontSize: 18,
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.10)',
+            letterSpacing: 0.5
+          }}
+        >Done</button>
+      </div>
+    </div>
+  );
+}
 
 const EditProfile = () => {
   const { id } = useParams();
@@ -83,6 +300,9 @@ const EditProfile = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('Sleek');
   const [showProfileControls, setShowProfileControls] = useState(false);
   const profileControlsRef = useRef(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [gearRotated, setGearRotated] = useState(false);
+  const gearRef = useRef(null);
 
   const activePage = pages.find((p) => p.id === activePageId) || pages[0];
   const blocksList = activePage ? activePage.blocks : [];
@@ -528,10 +748,13 @@ const EditProfile = () => {
     }));
   };
 
+  // Typing header animation
+  const animatedHeader = useTypingHeader(Array.isArray(formData.header) ? formData.header : [], 80, 1200, 40);
+
   const renderHeaderTemplate = () => {
     const templateProps = {
       name: formData.name,
-      header: formData.header,
+      header: `I'm ${animatedHeader}`,
       backgroundPhoto: formData.backgroundPhoto
     };
 
@@ -583,12 +806,49 @@ const EditProfile = () => {
           </div>
           <div className="profile-controls-dropdown-wrapper">
           <button
-            className="profile-controls-dropdown-btn"
-            onClick={() => setShowProfileControls((v) => !v)}
-            aria-haspopup="true"
-            aria-expanded={showProfileControls}
+            className="profile-settings-glass-btn"
+            onClick={() => setShowProfileModal(true)}
+            style={{
+              background: 'rgba(255,255,255,0.18)',
+              border: '1.5px solid rgba(255,255,255,0.22)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: 15,
+              borderRadius: 10,
+              padding: '8px 18px',
+              margin: '18px 0 18px 0',
+              boxShadow: '0 2px 8px 0 rgba(31, 38, 135, 0.10)',
+              cursor: 'pointer',
+              letterSpacing: 0.5,
+              transition: 'background 0.2s, color 0.2s',
+              outline: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.28)';
+              e.currentTarget.style.color = '#222';
+              setGearRotated(true);
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.18)';
+              e.currentTarget.style.color = '#fff';
+              setGearRotated(false);
+            }}
           >
-            Profile Settings <span className="gear-icon">&#9881;</span>
+            <span
+              ref={gearRef}
+              style={{
+                fontSize: 20,
+                verticalAlign: 'middle',
+                display: 'inline-block',
+                transition: 'transform 0.4s cubic-bezier(.4,2,.6,1)',
+                transform: gearRotated ? 'rotate(180deg)' : 'rotate(0deg)'
+              }}
+            >⚙️</span>
+            <span style={{verticalAlign: 'middle'}}>Edit Settings</span>
           </button>
             {showProfileControls && (
               <div className="profile-controls-bar profile-controls-dropdown" ref={profileControlsRef}>
@@ -763,14 +1023,19 @@ const EditProfile = () => {
                 key={page.id} 
                 id={`page-${page.id}`}
                 className="page-section"
-                style={{ 
+                style={{
                   minHeight: '100vh',
-                  padding: '0',
+                  padding: 0,
                   borderBottom: '1px solid rgba(255,255,255,0.1)',
-                  backgroundColor: `${page.color || formData.themeColor}`,
+                  backgroundColor: hexToRgba(page.color || formData.themeColor, 0.25),
                   opacity: 1,
                   position: 'relative',
                   zIndex: 10 + idx,
+                  backdropFilter: 'blur(16px)',
+                  WebkitBackdropFilter: 'blur(16px)',
+                  boxShadow: '0 4px 32px 0 rgba(31, 38, 135, 0.10)',
+                  borderRadius: 0,
+                  margin: 0,
                 }}
               >
                 <div className="page-gradient-overlay" />
@@ -905,6 +1170,14 @@ const EditProfile = () => {
           }
         }}
         onGenerateAI={() => { setShowOnboarding(false); navigate("/resume-to-webpage"); }}
+      />
+      <ProfileSettingsModal
+        show={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        formData={formData}
+        setFormData={setFormData}
+        selectedTemplate={selectedTemplate}
+        setSelectedTemplate={setSelectedTemplate}
       />
     </>
   );

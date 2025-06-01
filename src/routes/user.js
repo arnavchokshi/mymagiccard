@@ -121,7 +121,8 @@ router.get("/:id", async (req, res) => {
       backgroundPhoto: user.backgroundPhoto,
       pages: user.pages,
       activePageId: user.activePageId,
-      themeColor: user.themeColor
+      themeColor: user.themeColor,
+      template: user.template
     });
     
   } catch (err) {
@@ -212,7 +213,8 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
         backgroundPhoto: user.backgroundPhoto,
         pages: user.pages,
         activePageId: user.activePageId,
-        themeColor: user.themeColor
+        themeColor: user.themeColor,
+        template: user.template
       }
     });
   } catch (err) {
@@ -396,7 +398,9 @@ router.get("/me", authenticateToken, async (req, res) => {
       highlights: user.highlights,
       backgroundPhoto: user.backgroundPhoto,
       pages: user.pages,
-      activePageId: user.activePageId
+      activePageId: user.activePageId,
+      themeColor: user.themeColor,
+      template: user.template
     });
   } catch (err) {
     console.error("Error fetching /me:", err);
