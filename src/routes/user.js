@@ -174,7 +174,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
 
     const update = {
       name,
-      header,
+      header: Array.isArray(header) ? header : (header ? [header] : []),
       highlights: parsedHighlights,
       pages: parsedPages.pages || parsedPages,
       activePageId: parsedPages.activePageId || activePageId,
@@ -400,7 +400,8 @@ router.get("/me", authenticateToken, async (req, res) => {
       pages: user.pages,
       activePageId: user.activePageId,
       themeColor: user.themeColor,
-      template: user.template
+      template: user.template,
+      onboarding: user.onboarding
     });
   } catch (err) {
     console.error("Error fetching /me:", err);
