@@ -8,6 +8,9 @@
   align-items: center;
   color: #fff;
   padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
+  background: none;
+  overflow: hidden;
 }
 
 .resume-background {
@@ -31,12 +34,24 @@
   background-color: rgba(15, 15, 15, 0.8);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 32px 0 #1e90ff44, 0 0 0 8px #b3a36922;
   border: 1px solid rgba(179, 163, 105, 0.3);
   padding: 40px;
   animation: fadeIn 0.6s ease-in-out;
   transform: translateY(0);
   transition: transform 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.resume-upload-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  border: 2.5px solid #1e90ff55;
+  opacity: 0.7;
 }
 
 .resume-upload-container:hover {
@@ -136,26 +151,40 @@
 }
 
 .submit-btn {
-  padding: 14px 30px;
-  background: linear-gradient(135deg, #1e90ff, #0052cc);
+  padding: 16px 36px;
+  background: linear-gradient(90deg, #1e90ff 40%, #b3a369 100%);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.18rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(.4,2,.6,1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-width: 180px;
+  gap: 12px;
+  min-width: 200px;
+  box-shadow: 0 2px 12px #1e90ff33;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  border: 2px solid #b3a36955;
+  opacity: 0.5;
 }
 
 .submit-btn:hover {
-  background: linear-gradient(135deg, #47a3ff, #0066ff);
-  transform: translateY(-3px);
-  box-shadow: 0 7px 15px rgba(0, 102, 255, 0.3);
+  background: linear-gradient(90deg, #b3a369 40%, #1e90ff 100%);
+  box-shadow: 0 8px 32px #b3a36933;
+  transform: translateY(-3px) scale(1.04);
 }
 
 .submit-btn:disabled {
@@ -165,44 +194,44 @@
 
 .spinner {
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  border-top-color: white;
+  border-top-color: #1e90ff;
   animation: spin 1s linear infinite;
 }
 
 .error-container {
   margin-top: 20px;
   padding: 16px;
-  background-color: rgba(255, 50, 50, 0.1);
+  background: rgba(255, 50, 50, 0.13);
   border-left: 4px solid #ff3232;
-  border-radius: 8px;
-}
-
-.error-msg {
+  border-radius: 10px;
+  font-size: 1.08rem;
   color: #ff6b6b;
-  font-size: 14px;
-  margin: 0;
+  box-shadow: 0 2px 8px #ff323222;
+  animation: fadeIn 0.5s;
 }
 
 .success-container {
   margin-top: 20px;
   padding: 16px;
-  background-color: rgba(39, 174, 96, 0.1);
+  background: rgba(39, 174, 96, 0.13);
   border-left: 4px solid #27ae60;
-  border-radius: 8px;
+  border-radius: 10px;
+  font-size: 1.08rem;
+  color: #2ecc71;
+  box-shadow: 0 2px 8px #27ae6022;
   animation: pulse 2s infinite;
 }
 
 .success-msg {
-  color: #2ecc71;
-  font-size: 14px;
-  margin: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  font-size: 1.08rem;
+  color: #2ecc71;
 }
 
 .success-msg::before {
@@ -214,14 +243,17 @@
 .info-container {
   margin-top: 20px;
   padding: 16px;
-  background-color: rgba(52, 152, 219, 0.1);
+  background: rgba(52, 152, 219, 0.13);
   border-left: 4px solid #3498db;
-  border-radius: 8px;
+  border-radius: 10px;
+  font-size: 1.08rem;
+  color: #5dade2;
+  box-shadow: 0 2px 8px #3498db22;
 }
 
 .info-text {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
+  color: #5dade2;
+  font-size: 1.08rem;
   margin: 0;
   line-height: 1.5;
 }
@@ -257,17 +289,41 @@
 
 @media (max-width: 768px) {
   .resume-upload-container {
-    padding: 30px 20px;
+    padding: 30px 12px;
   }
-  
   .button-group {
     flex-direction: column-reverse;
     gap: 15px;
   }
-  
   .back-button, .submit-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .resume-upload-container {
+    padding: 16px 2px;
+  }
+  .resume-header h2 {
+    font-size: 2rem;
+  }
+  .resume-subheading {
+    font-size: 1rem;
+  }
+  .resume-textarea {
+    font-size: 0.98rem;
+    padding: 12px;
+  }
+  .form-group label {
+    font-size: 1rem;
+  }
+  .button-group {
+    gap: 10px;
+  }
+  .back-button, .submit-btn {
+    font-size: 1rem;
+    padding: 12px 10px;
   }
 }
   

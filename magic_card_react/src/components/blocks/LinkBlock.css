@@ -289,4 +289,58 @@
 }
 .block-wrapper-inside-carousel .link-block-wrapper .preview-url {
   font-size: 0.7rem !important;
+}
+
+.link-block-button-style {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  max-width: 100%;
+}
+
+.link-block-main-button {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: linear-gradient(90deg, #23233a 60%, #2d2d4d 100%);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  padding: 22px 36px;
+  margin: 18px 0 0 0;
+  text-decoration: none;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  cursor: pointer;
+  min-width: 260px;
+  max-width: 100%;
+  justify-content: center;
+}
+
+.link-block-main-button:hover {
+  background: linear-gradient(90deg, #2d2d4d 60%, #23233a 100%);
+  box-shadow: 0 8px 32px rgba(179,163,105,0.13);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.link-block-favicon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  flex-shrink: 0;
+}
+
+.link-block-btn-label {
+  flex: 1;
+  text-align: center;
+  font-size: 1.18em;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.01em;
+  white-space: pre-line;
 } 

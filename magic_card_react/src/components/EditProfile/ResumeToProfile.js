@@ -102,15 +102,14 @@ function ResumeToProfile() {
       
     <div className="resume-upload-container">
         <div className="resume-header">
-      <h2>Generate Profile from Resume</h2>
-          <p className="resume-subheading">
-            Paste your resume text below and our AI will create a professional profile highlighting your skills and experience
-          </p>
+      <h2>Generate Profile</h2>
+          <p className="resume-subheading">More is better </p>
+          <p className="resume-subheading">Paste both resume and LinkedIn for the best results</p>
         </div>
         
       <form onSubmit={handleSubmit} className="resume-form">
           <div className="form-group">
-            <label htmlFor="resume-text">Resume Text</label>
+            <label htmlFor="resume-text">Paste your text below—our AI will turn it into a professional profile</label>
         <textarea
               id="resume-text"
           rows="16"

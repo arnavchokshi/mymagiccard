@@ -160,7 +160,7 @@ The structure should look like:
 STYLE & COMPLETENESS INSTRUCTIONS:
 ALL BLOCKS MUST HAVE UNIQUE IDS!!! VERY IMPORTANT.
 
-Use at most 3 highlights with max 15 characters. Highlights are users biggest flexing points. (4.0 GPA, Amazon intern, etc.)
+Use at most 4 highlights with max 15 characters. Highlights are users biggest flexing points. (4.0 GPA, Amazon intern, etc.)
 Make the color of the pages different but follow a theme.
 When adding images in image or flip blocks, use unsplash.com to find images. Try to find images that are relevant to the context of the block.
 1. PAGE STRUCTURE:
@@ -169,7 +169,7 @@ When adding images in image or flip blocks, use unsplash.com to find images. Try
      • Side by Side block:Text block: Bio (min 200 characters), PDF block that just says "Add Google Drive Link to Resume here"
      • ContactsText block: All professional links
      • PDF block: Resume (Only if resume link is provided)
-     • MultiBlock: Skills overview with categories. Max out multiblock content to 500 characters.
+     • MultiBlock: Skills overview with categories. Max out multiblock content to 500 characters. Each bullet should be at most 49 characters long.
      • Title block: "Educational Journey" (When adding education, make sure the student is getting a degree here and not just interning or researching. Add to professional ex)
      • Flip blocks for each education milestone:
        - Front: Institution logo, degree name, years
