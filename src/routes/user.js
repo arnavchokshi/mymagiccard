@@ -151,7 +151,7 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     } = req.body;
 
     console.log("🔍 name:", name);
-    console.log("🔍 header:", header);
+    console.log("🔍 header received:", header);
     console.log("🔍 highlights (raw):", highlights);
     console.log("🔍 pages (raw):", pages);
 
@@ -174,36 +174,27 @@ router.post("/setup", authenticateToken, upload.single('backgroundPhoto'), async
     }
 
     let parsedHeader;
-if (Array.isArray(header)) {
-  // If you get an array, but it has one string joined with commas, split it
-  if (header.length === 1 && header[0].includes(',')) {
-    parsedHeader = header[0].split(',').map(s => s.trim()).filter(Boolean);
-  } else {
-    parsedHeader = header.filter(h => typeof h === 'string');
-  }
-} else if (typeof header === 'string') {
-  try {
-    const maybeArray = JSON.parse(header);
-    if (Array.isArray(maybeArray)) {
-      // Defensive: if it’s an array with a single comma-joined string, split
-      if (maybeArray.length === 1 && maybeArray[0].includes(',')) {
-        parsedHeader = maybeArray[0].split(',').map(s => s.trim()).filter(Boolean);
-      } else {
-        parsedHeader = maybeArray;
+    if (Array.isArray(header)) {
+      parsedHeader = header.filter(h => typeof h === 'string');
+    } else if (typeof header === 'string') {
+      try {
+        const maybeArray = JSON.parse(header);
+        if (Array.isArray(maybeArray)) {
+          parsedHeader = maybeArray;
+        } else if (typeof maybeArray === 'string') {
+          parsedHeader = maybeArray.split(/,|\n/).map(s => s.trim()).filter(Boolean);
+        } else {
+          parsedHeader = [header];
+        }
+      } catch {
+        // Fallback: split string by commas or newlines
+        parsedHeader = header.split(/,|\n/).map(s => s.trim()).filter(Boolean);
       }
     } else {
-      parsedHeader = header.split(',').map(s => s.trim()).filter(Boolean);
+      parsedHeader = [];
     }
-  } catch {
-    // Fallback: split string by commas (in case someone sends "a, b, c")
-    parsedHeader = header.split(',').map(s => s.trim()).filter(Boolean);
-  }
-} else {
-  parsedHeader = [];
-}
-// Remove any empty strings
-parsedHeader = parsedHeader.filter(line => !!line);
-
+    // Remove any empty strings
+    parsedHeader = parsedHeader.filter(line => !!line);
 
     const update = {
       name,

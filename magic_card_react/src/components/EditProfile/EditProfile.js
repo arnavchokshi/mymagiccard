@@ -351,12 +351,16 @@ const EditProfile = () => {
                   ? (() => {
                       try {
                         const parsed = JSON.parse(data.header);
-                        return Array.isArray(parsed) ? parsed : [data.header];
-                      } catch {
+                        if (Array.isArray(parsed)) return parsed;
+                        // If it's a string, split by comma or newline
+                        if (typeof parsed === 'string') return parsed.split(/,|\n/).map(s => s.trim()).filter(Boolean);
                         return [data.header];
+                      } catch {
+                        // Split by comma or newline
+                        return data.header.split(/,|\n/).map(s => s.trim()).filter(Boolean);
                       }
                     })()
-                  : ["Hello, my name is Your Name! Contact me at your.email@example.com"],
+                  : ["a __ major", "based in ___", "interested in ___"],
               themeColor: data.themeColor || "#b3a369"
             });
             setSelectedTemplate(data.template || 'Sleek');
@@ -388,12 +392,16 @@ const EditProfile = () => {
                     ? (() => {
                         try {
                           const parsed = JSON.parse(publicData.header);
-                          return Array.isArray(parsed) ? parsed : [publicData.header];
-                        } catch {
+                          if (Array.isArray(parsed)) return parsed;
+                          // If it's a string, split by comma or newline
+                          if (typeof parsed === 'string') return parsed.split(/,|\n/).map(s => s.trim()).filter(Boolean);
                           return [publicData.header];
+                        } catch {
+                          // Split by comma or newline
+                          return publicData.header.split(/,|\n/).map(s => s.trim()).filter(Boolean);
                         }
                       })()
-                    : ["Hello, my name is Your Name! Contact me at your.email@example.com"],
+                    : ["a __ major", "based in ___", "interested in ___"],
                 themeColor: publicData.themeColor || "#b3a369"
         });
               if (Array.isArray(publicData.pages)) {

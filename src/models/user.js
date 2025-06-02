@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
   },
   name: { type: String, required: true },
   backgroundPhoto: { type: String },
-  header: { type: [String], default: ["a ___ student", "based in ___", "interested in ___"] },
+  header: { type: [String], default: ["a __ major", "based in ___", "interested in ___"] },
   highlights: [HighlightSchema],
   pages: [PageSchema],
   activePageId: { type: String }
