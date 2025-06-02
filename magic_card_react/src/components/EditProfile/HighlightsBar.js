@@ -51,7 +51,6 @@ const HighlightsBar = ({
   return (
     <div className="highlights-container">
       <div className="highlights-header">
-        <h3>Highlights</h3>
         {!readOnly && (
           <button
             className="toggle-highlight-form-btn"

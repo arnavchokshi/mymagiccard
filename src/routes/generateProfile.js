@@ -166,10 +166,10 @@ When adding images in image or flip blocks, use unsplash.com to find images. Try
 1. PAGE STRUCTURE:
    - About Page (Required):
      • Title block: Professional introduction
-     • Text block: Bio (min 200 characters)
+     • Side by Side block:Text block: Bio (min 200 characters), PDF block that just says "Add Google Drive Link to Resume here"
      • ContactsText block: All professional links
      • PDF block: Resume (Only if resume link is provided)
-     • MultiBlock: Skills overview with categories
+     • MultiBlock: Skills overview with categories. Max out multiblock content to 500 characters.
      • Title block: "Educational Journey" (When adding education, make sure the student is getting a degree here and not just interning or researching. Add to professional ex)
      • Flip blocks for each education milestone:
        - Front: Institution logo, degree name, years
@@ -192,7 +192,7 @@ When adding images in image or flip blocks, use unsplash.com to find images. Try
      - Other pages can be made occording to how resume input is formatted.
 
 2. CODE BLOCK GUIDELINES:
-   - Each code block must have a graph, pie, or bar chart showing relevant information like languages know, skill level, etc. Animations must be complex and engaging and use physics.
+   - Each code block must have a graph, pie, or bar chart showing relevant information like languages know, skill level, etc. Animations must be complex and engaging and use physics. Add particle effects and animations.
    - Use CSS variables for easy customization
    - Include hover, focus, and active states
    ⚠️ IMPORTANT: All code blocks must be valid JSON string literals:
