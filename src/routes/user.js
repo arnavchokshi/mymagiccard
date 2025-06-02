@@ -79,7 +79,7 @@ router.post("/register", async (req, res) => {
       name,
       password: hashedPassword,
       highlights: [],
-      pages: [],
+      pages: [{ id: 'main', name: 'Main', blocks: [{ id: 'block-highlights', type: 'highlights', content: [] }] }],
       activePageId: "main",
       header: [] // Always initialize as an array
     });
