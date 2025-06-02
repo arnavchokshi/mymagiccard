@@ -1119,7 +1119,7 @@ const EditProfile = () => {
                     />
                   </div>
                   {/* Render HighlightsBar inside the Main page */}
-                  {page.id === 'main' && (
+                  {idx === 0 && (
                     <div className="highlights-section" style={{ marginBottom: '32px' }}>
                       <HighlightsBar
                         highlights={formData.highlights}

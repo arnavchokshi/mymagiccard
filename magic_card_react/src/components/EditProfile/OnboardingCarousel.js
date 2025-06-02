@@ -42,7 +42,6 @@ const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
       content: (
         <form
           className="onboarding-profile-form"
-          onSubmit={handleSubmit}
         >
           <div className="onboarding-template-choices">
             {templateOptions.map(opt => (
@@ -129,38 +128,12 @@ const OnboardingCarousel = ({ show, onClose, onProfileSetup }) => {
         </div>
         {currentSlide === 0 && (
           <button 
-            type="submit"
             className="nav-button next submit-bottom-right"
-            onClick={handleSubmit}
+            onClick={() => setCurrentSlide(currentSlide + 1)}
+            type="button"
           >
             Next
           </button>
-        )}
-        {currentSlide > 0 && (
-          <div className="carousel-navigation">
-            <button 
-              className="nav-button prev"
-              onClick={handlePrev}
-              disabled={currentSlide === 0}
-            >
-              ←
-            </button>
-            <div className="slide-dots">
-              {slides.map((_, index) => (
-                <span 
-                  key={index}
-                  className={`dot ${index === currentSlide ? 'active' : ''}`}
-                  onClick={() => setCurrentSlide(index)}
-                />
-              ))}
-            </div>
-            <button 
-              className="nav-button next"
-              onClick={handleNext}
-            >
-              {currentSlide === slides.length - 1 ? 'Get Started' : '→'}
-            </button>
-          </div>
         )}
       </div>
     </div>

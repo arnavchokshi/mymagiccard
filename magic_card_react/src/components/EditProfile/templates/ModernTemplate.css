@@ -67,6 +67,13 @@
   -webkit-text-fill-color: transparent;
 }
 
+/* Remove the username-effect animation and related styles */
+.modern-header-name.username-effect,
+.modern-header-name.username-effect::before,
+.modern-header-name.username-effect::after {
+  all: unset;
+}
+
 .modern-header-subtitle {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 22px;

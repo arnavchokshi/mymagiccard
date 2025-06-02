@@ -616,9 +616,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 190px;
-  min-width: 190px;
+  width: 220px;
+  min-width: 180px;
   max-width: 260px;
+  aspect-ratio: 4/3;
   padding: 0 0 8px 0;
 }
 
@@ -629,11 +630,13 @@
 
 .template-choice-img img {
   width: 100%;
-  height: 140px;
+  height: 160px;
   object-fit: cover;
   border-radius: 12px 12px 0 0;
   margin-bottom: 6px;
   background: #222;
+  aspect-ratio: 4/3;
+  display: block;
 }
 
 .template-choice-label {

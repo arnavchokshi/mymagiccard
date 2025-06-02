@@ -27,7 +27,8 @@ const HighlightsBar = ({
   newHighlight = { label: "", category: CATEGORIES.ACADEMIC },
   setNewHighlight,
   onAdd,
-  onRemove
+  onRemove,
+  readOnly = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -51,13 +52,15 @@ const HighlightsBar = ({
     <div className="highlights-container">
       <div className="highlights-header">
         <h3>Highlights</h3>
-        <button
-          className="toggle-highlight-form-btn"
-          onClick={() => setIsExpanded(!isExpanded)}
-          type="button"
-        >
-          {isExpanded ? "Cancel" : "Add Highlight"}
-        </button>
+        {!readOnly && (
+          <button
+            className="toggle-highlight-form-btn"
+            onClick={() => setIsExpanded(!isExpanded)}
+            type="button"
+          >
+            {isExpanded ? "Cancel" : "Add Highlight"}
+          </button>
+        )}
       </div>
 
       <div className="highlights-row">
@@ -68,14 +71,16 @@ const HighlightsBar = ({
               className={`highlight-badge ${getCategoryClass(highlight.category)}`}
             >
               <span className="highlight-label">{highlight.label}</span>
-              <button
-                className="remove-btn"
-                onClick={() => onRemove(index)}
-                type="button"
-                aria-label="Remove highlight"
-              >
-                ×
-              </button>
+              {!readOnly && (
+                <button
+                  className="remove-btn"
+                  onClick={() => onRemove(index)}
+                  type="button"
+                  aria-label="Remove highlight"
+                >
+                  ×
+                </button>
+              )}
             </div>
           ))
         ) : (
@@ -85,7 +90,7 @@ const HighlightsBar = ({
         )}
       </div>
 
-      {isExpanded && (
+      {!readOnly && isExpanded && (
         <div className="highlight-form">
           <input
             type="text"
