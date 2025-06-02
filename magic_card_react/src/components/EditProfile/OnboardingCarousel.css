@@ -35,7 +35,9 @@
   border: 1px solid var(--border-emphasis);
   border-radius: 24px;
   width: 650px;
-  height: 600px;
+  height: auto;
+  min-height: 500px;
+  max-height: 90vh;
   padding: 48px;
   position: relative;
   box-shadow: var(--shadow-elevated), 
@@ -82,18 +84,17 @@
 }
 
 .carousel-content {
-  text-align: center;
-  margin-bottom: 48px;
-  flex: 1;
+  flex: 1 1 auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .carousel-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  margin-bottom: 24px;
 }
 
 .carousel-title {
@@ -258,11 +259,13 @@
 }
 
 .carousel-navigation {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-bottom: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 48px;
-  gap: 20px;
+  justify-content: center;
+  gap: 32px;
 }
 
 .nav-button {
@@ -327,7 +330,7 @@
 
 .slide-dots {
   display: flex;
-  gap: 12px;
+  gap: 18px;
   align-items: center;
 }
 
@@ -771,4 +774,26 @@
 .onboarding-checkbox-container {
   margin-top: 8px;
   margin-bottom: 0;
+}
+
+.help-link {
+  position: fixed;
+  top: 18px;
+  right: 32px;
+  z-index: 2100;
+  background: none;
+  color: var(--primary-neon);
+  font-weight: 500;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: none;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.help-link:hover {
+  color: #ffd700;
+  text-decoration: underline;
 }

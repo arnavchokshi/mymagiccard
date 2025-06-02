@@ -25,6 +25,7 @@ import BlockDropZone from "./BlockDropZone";
 // Utilities
 import { generateUniqueBlockId, getDefaultBlockContent } from "./utils";
 import OnboardingCarousel from "./OnboardingCarousel";
+import HelpCarousel from './HelpCarousel';
 
 function hexToRgba(hex, alpha = 1) {
   let c = hex.replace('#', '');
@@ -301,6 +302,7 @@ const EditProfile = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [gearRotated, setGearRotated] = useState(false);
   const gearRef = useRef(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -816,6 +818,9 @@ const EditProfile = () => {
 
   return (
     <>
+      <button className="help-link" onClick={() => setShowHelp(true)}>
+        Help & Guide
+      </button>
       <div className="edit-page">
         {console.log("Render - showOnboarding state:", showOnboarding)}
         <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
@@ -1189,6 +1194,7 @@ const EditProfile = () => {
         }}
         onGenerateAI={() => { setShowOnboarding(false); navigate("/resume-to-webpage"); }}
       />
+      <HelpCarousel show={showHelp} onClose={() => setShowHelp(false)} />
       <ProfileSettingsModal
         show={showProfileModal}
         onClose={() => setShowProfileModal(false)}
